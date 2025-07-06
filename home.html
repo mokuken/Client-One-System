@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: url(assets/images/bg.webp) center/cover no-repeat;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .welcome-container {
+            background: rgba(255,255,255,0.95);
+            padding: 2.5rem 2rem 2rem 2rem;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+        }
+        .welcome-container h1 {
+            margin-bottom: 0.5rem;
+            color: #2193b0;
+            letter-spacing: 1px;
+            font-size: 2rem;
+        }
+        .welcome-container p {
+            margin-bottom: 1.5rem;
+            color: #555;
+            font-size: 1.05rem;
+        }
+        .modern-button {
+            display: inline-block;
+            width: 95%;
+            padding: 0.8rem;
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            margin-top: 1.2rem;
+        }
+        .modern-button:hover {
+            background: linear-gradient(90deg, #6dd5ed 0%, #2193b0 100%);
+        }
+        .beach-logo {
+            width: 60px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="welcome-container">
+        <!-- Optional: Add a logo image here -->
+        <!-- <img src="beach-logo.png" alt="IVISAN Beach Resort Logo" class="beach-logo"> -->
+        <h1>Welcome to Ariva Ivisan🏖️</h1>
+        <p>Browse, reserve, and enjoy the finest beach resort in just a few clicks.</p>
+        <a class="modern-button" href="#">Start Browsing now &nbsp;&rarr;</a>
+    </div>
+</body>
+</html>

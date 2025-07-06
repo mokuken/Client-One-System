@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(90deg, rgba(204, 254, 216, 1) 0%, rgba(148, 185, 255, 1) 100%);
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .signup-container {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            width: 95%;
+            max-width: 900px;
+            padding: 40px 32px 32px 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .signup-container h1 {
+            color: #2193b0;
+            font-size: 2rem;
+            margin-bottom: 24px;
+            letter-spacing: 1px;
+        }
+        .user-container {
+            display: flex;
+            width: 100%;
+            gap: 32px;
+            margin-bottom: 24px;
+        }
+        .profile-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+            min-width: 200px;
+        }
+        .profile-img {
+            border: 2px solid #b2ebf2;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: #eaeaea url('assets/images/bg.webp') center/cover no-repeat;
+            margin-bottom: 8px;
+        }
+        .profile-container input[type="file"] {
+            border: none;
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 8px 0;
+            width: 100%;
+            font-size: 1rem;
+        }
+        .user-information {
+            display: flex;
+            gap: 24px;
+            width: 100%;
+            justify-content: center;
+        }
+        .user-information > div {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 250px;
+        }
+        .user-information input[type="text"] {
+            padding: 12px 14px;
+            border: 1px solid #b2ebf2;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.2s;
+            background: #f5f5f5;
+        }
+        .user-information input[type="text"]:focus {
+            border: 1.5px solid #2193b0;
+            background: #e3f6fc;
+        }
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 32px;
+        }
+        .modern-button, .back-button {
+            padding: 0.8rem 2.2rem;
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .modern-button:hover, .back-button:hover {
+            background: linear-gradient(90deg, #6dd5ed 0%, #2193b0 100%);
+        }
+        .back-button {
+            background: #e0e0e0;
+            color: #2193b0;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+        @media (max-width: 900px) {
+            .signup-container { padding: 24px 8px; }
+            .user-container { flex-direction: column; align-items: center; gap: 18px; }
+            .user-information { flex-direction: column; gap: 18px; align-items: center; }
+            .user-information > div { width: 100%; }
+            .form-actions { flex-direction: column; gap: 16px; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <h1>General Customer Fill Up Form</h1>
+        <div class="user-container">
+            <div class="profile-container">
+                <div class="profile-img"></div>
+                <input type="file" accept=".txt, .doc, .docx, .pdf" placeholder="Upload your file here">
+            </div>
+            <div class="user-information">
+                <div>
+                    <input type="text" placeholder="Name" required>
+                    <input type="text" placeholder="Birthdate" required>
+                    <input type="text" placeholder="Gender" required>
+                    <input type="text" placeholder="Permanent Address" required>
+                </div>
+                <div>
+                    <input type="text" placeholder="Contact Number" required>
+                    <input type="text" placeholder="Email" required>
+                    <input type="text" placeholder="Username" required>
+                    <input type="text" placeholder="Password" required>
+                </div>
+            </div>
+        </div>
+        <div class="user-information" style="margin-top: 18px;">
+            <div>
+                <input type="text" placeholder="Emergency Contact Name" required>
+                <input type="text" placeholder="Emergency Contact Number" required>
+                <input type="text" placeholder="Relationship" required>
+            </div>
+            <div>
+                <input type="text" placeholder="Username" required>
+                <input type="text" placeholder="Password" required>
+                <input type="text" placeholder="Confirm Password" required>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button class="back-button" type="button">Back</button>
+            <button type="submit" class="modern-button">Submit</button>
+        </div>
+    </div>
+</body>
+</html>

@@ -247,7 +247,7 @@
                     <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2"/>
                 </svg>
             </div>
-            <a href="#">Sign Up</a>
+            <a href="#" id="signUpLink">Sign Up</a>
             <a href="#">Log in</a>
         </div>
     </div>
@@ -369,6 +369,20 @@
             <a href="#" class="register-link" id="customerLoginLink">Are you a Customer? Login Here</a>
         </div>
     </div>
+    <!-- Modal for Sign Up Selection -->
+    <div id="signUpModal" class="modal-overlay" style="display:none;">
+        <div class="login-container">
+            <h2>Sign Up As</h2>
+            <a href="userSignUp.html">
+                <button id="signUpCustomerBtn" style="margin-bottom:1rem;">Customer</button>
+            </a>
+            <a href="ownerSignUp.html">
+                <button id="signUpOwnerBtn">Resort Owner</button>
+            </a>
+            <br>
+            <a href="#" class="register-link" id="closeSignUpModal">Cancel</a>
+        </div>
+    </div>
     <script>
         // Show modal on "Log in" click
         document.querySelectorAll('.nav-links a').forEach(function(link) {
@@ -402,6 +416,22 @@
             e.preventDefault();
             document.getElementById('ownerLoginModal').style.display = 'none';
             document.getElementById('loginModal').style.display = 'flex';
+        });
+        // Show sign up selection modal
+        document.getElementById('signUpLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('signUpModal').style.display = 'flex';
+        });
+        // Hide sign up modal when clicking outside the box
+        document.getElementById('signUpModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+            }
+        });
+        // Hide sign up modal on cancel
+        document.getElementById('closeSignUpModal').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('signUpModal').style.display = 'none';
         });
     </script>
 </body>

@@ -97,6 +97,12 @@
             box-shadow: 0 4px 16px rgba(33,147,176,0.08);
         }
 
+        .sidebar a.active {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(33,147,176,0.08);
+        }
+
         .sidebar a svg {
             min-width: 22px;
             min-height: 22px;
@@ -118,8 +124,8 @@
         .main {
             background-color: #fff;
             width: 100%;
-            border: 1px solid black;
             border-radius: 10px;
+            padding: 20px;
         }
     </style>
 </head>
@@ -133,7 +139,7 @@
     <div class="content">
         <div class="sidebar">
             <h1>Admin</h1>
-            <a>
+            <a class="active">
                 <svg fill="#000000" viewBox="-4.5 0 32 32" width="20px" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>home</title> <path d="M19.469 12.594l3.625 3.313c0.438 0.406 0.313 0.719-0.281 0.719h-2.719v8.656c0 0.594-0.5 1.125-1.094 1.125h-4.719v-6.063c0-0.594-0.531-1.125-1.125-1.125h-2.969c-0.594 0-1.125 0.531-1.125 1.125v6.063h-4.719c-0.594 0-1.125-0.531-1.125-1.125v-8.656h-2.688c-0.594 0-0.719-0.313-0.281-0.719l10.594-9.625c0.438-0.406 1.188-0.406 1.656 0l2.406 2.156v-1.719c0-0.594 0.531-1.125 1.125-1.125h2.344c0.594 0 1.094 0.531 1.094 1.125v5.875z"></path> </g></svg>
                 <p>Home</p>
             </a>
@@ -158,7 +164,38 @@
                 <p>Pendings</p>
             </a>
         </div>
-        <div class="main"></div>
+        <div class="main">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h1>Recent Resort Added</h1>
+                <input type="text" placeholder="Search..." style="width: 30%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;"/>
+            </div>
+            <div class="Resorts">
+                <div style="display: flex;align-items: center;margin-bottom: 20px;">
+                    <img src="https://via.placeholder.com/150" alt="Resort Image" style="width: 100px; height: 100px; border-radius: 50%;border: 1px solid black;margin-right: 10px;"/>
+                    <div style="width: 100%;">
+                        <p>RBM Virgin Beach and Resort</p>
+                        <p><span style="color: orange;">★ ★ ★ ★ ★</span> (489) reviews</p>
+                        <p>
+                            Baisao, Ivisan, Capiz
+                            <svg style="vertical-align: middle; margin-left: 6px;" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C7.03 2 3 6.03 3 11c0 5.25 7.05 10.74 8.09 11.52a1 1 0 0 0 1.22 0C13.95 21.74 21 16.25 21 11c0-4.97-4.03-9-9-9zm0 17.88C9.14 17.1 5 13.61 5 11c0-3.86 3.14-7 7-7s7 3.14 7 7c0 2.61-4.14 6.1-7 8.88zm0-10.38A2.38 2.38 0 1 0 12 13.88 2.38 2.38 0 0 0 12 7.5z" fill="#4a90e2"/></svg>
+                            <a style="text-decoration: underline;">See More</a>
+                        </p>
+                    </div>
+                </div>
+                <div style="display: flex;align-items: center;">
+                    <img src="https://via.placeholder.com/150" alt="Resort Image" style="width: 100px; height: 100px; border-radius: 50%;border: 1px solid black;margin-right: 10px;"/>
+                    <div style="width: 100%;">
+                        <p>RBM Virgin Beach and Resort</p>
+                        <p><span style="color: orange;">★ ★ ★ ★ ★</span> (489) reviews</p>
+                        <p>
+                            Baisao, Ivisan, Capiz
+                            <svg style="vertical-align: middle; margin-left: 6px;" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C7.03 2 3 6.03 3 11c0 5.25 7.05 10.74 8.09 11.52a1 1 0 0 0 1.22 0C13.95 21.74 21 16.25 21 11c0-4.97-4.03-9-9-9zm0 17.88C9.14 17.1 5 13.61 5 11c0-3.86 3.14-7 7-7s7 3.14 7 7c0 2.61-4.14 6.1-7 8.88zm0-10.38A2.38 2.38 0 1 0 12 13.88 2.38 2.38 0 0 0 12 7.5z" fill="#4a90e2"/></svg>
+                            <a style="text-decoration: underline;">See More</a>
+                        </p>    
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>

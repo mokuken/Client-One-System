@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            background: #CCFED8;
+            background: linear-gradient(90deg, rgba(204, 254, 216, 1) 0%, rgba(148, 185, 255, 1) 100%);
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 10vh;
+            padding: 0 100px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            justify-content: center ;
+        }
+
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 20px;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .search-container {
+            position: relative;
+            width: 300px;
+        }
+
+        .search {
+            width: 100%;
+            padding: 10px 40px 10px 10px; /* right padding for icon */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            fill: #888;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 0;
+            height: 90vh;
+            overflow-y: scroll;
+        }
+
+        .offer {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+            width: 1000px;
+            min-height: 300px;
+            margin-bottom: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .offer:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        }
+
+        .offer img {
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+            background: #eaeaea;
+            border-top-left-radius: 18px;
+            border-bottom-left-radius: 18px;
+            margin-right: 0;
+        }
+
+        .offer-details {
+            padding: 24px 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .offer-details h1 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #2a2a2a;
+        }
+
+        .resort-header {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            width: 1000px;
+            min-height: 600px;
+            margin-bottom: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        /* .resort-resort-header:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        } */
+
+        .resort-header img {
+            width: 100%;
+            height: 300px;
+            background: #eaeaea;
+            border-top-left-radius: 18px;
+            border-bottom-left-radius: 18px;
+            margin-right: 0;
+        }
+
+        .resort-header-details {
+            padding: 24px 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .resort-header-details h1 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #2a2a2a;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .stars {
+            color: #FFD700;
+            font-size: 1.5rem;
+        }
+
+        .number-of-reviews {
+            color: #888;
+            font-size: 0.95rem;
+        }
+
+        .location {
+            color: #4a90e2;
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+
+        .offer-images {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .offer-images > div {
+            width: 130px;
+            height: 130px;
+            background: #f5f5f5;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .offer-images > div img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <p class="title">Ariva Ivisan</p>
+        <div class="nav-links">
+            <div class="search-container">
+                <input class="search" type="text" placeholder="Search...">
+                <svg class="search-icon" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" fill="none"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2"/>
+                </svg>
+            </div>
+            <a class="bell" title="Pending" id="pending-icon">
+                <svg fill="#000000" viewBox="0 0 1920 1920" width="30px" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1190.725 1368.395c77.93 63.247 151.68 122.993 191.096 252.763l22.25 72.96H515.336l22.137-72.96c39.416-129.77 113.167-189.516 191.21-252.763l169.524-137.675c35.577-28.913 87.304-29.026 122.993.113l169.525 137.562Zm142.306-641.393c135.529-109.891 304.263-246.663 304.263-670.531V0H282v56.47c0 423.869 168.734 560.64 304.264 670.532 88.884 72.057 147.5 119.605 147.5 232.998 0 113.393-58.616 160.941-147.5 232.885C450.734 1302.889 282 1439.66 282 1863.529V1920h1355.294v-56.47c0-423.869-168.734-560.64-304.263-670.645-88.772-71.944-147.502-119.492-147.502-232.885 0-113.393 58.73-160.941 147.502-232.998Z" fill-rule="evenodd"></path>
+                </svg>
+            </a>
+            <a class="bell" title="Notifications">
+                <svg viewBox="0 0 24 24" fill="none" width="40px" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M12.0009 5C13.4331 5 14.8066 5.50571 15.8193 6.40589C16.832 7.30606 17.4009 8.52696 17.4009 9.8C17.4009 11.7691 17.846 13.2436 18.4232 14.3279C19.1606 15.7133 19.5293 16.406 19.5088 16.5642C19.4849 16.7489 19.4544 16.7997 19.3026 16.9075C19.1725 17 18.5254 17 17.2311 17H6.77066C5.47638 17 4.82925 17 4.69916 16.9075C4.54741 16.7997 4.51692 16.7489 4.493 16.5642C4.47249 16.406 4.8412 15.7133 5.57863 14.3279C6.1558 13.2436 6.60089 11.7691 6.60089 9.8C6.60089 8.52696 7.16982 7.30606 8.18251 6.40589C9.19521 5.50571 10.5687 5 12.0009 5ZM12.0009 5V3M9.35489 20C10.0611 20.6233 10.9888 21.0016 12.0049 21.0016C13.0209 21.0016 13.9486 20.6233 14.6549 20" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+            </a>
+            <a class="chat" title="Chat">
+                <svg viewBox="0 0 24 24" fill="none" width="35px" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M17 3.33782C15.5291 2.48697 13.8214 2 12 2C6.47715 2 2 6.47715 2 12C2 13.5997 2.37562 15.1116 3.04346 16.4525C3.22094 16.8088 3.28001 17.2161 3.17712 17.6006L2.58151 19.8267C2.32295 20.793 3.20701 21.677 4.17335 21.4185L6.39939 20.8229C6.78393 20.72 7.19121 20.7791 7.54753 20.9565C8.88837 21.6244 10.4003 22 12 22C17.5228 22 22 17.5228 22 12C22 10.1786 21.513 8.47087 20.6622 7" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"></path> <path d="M8 12H8.009M11.991 12H12M15.991 12H16" stroke="#1C274C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+            </a>
+            <a class="profile" title="Profile">
+                <svg viewBox="0 0 24 24" fill="none" width="35px" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M14.5 8.5C14.5 9.88071 13.3807 11 12 11C10.6193 11 9.5 9.88071 9.5 8.5C9.5 7.11929 10.6193 6 12 6C13.3807 6 14.5 7.11929 14.5 8.5Z" fill="#000000"></path> <path d="M15.5812 16H8.50626C8.09309 16 7.87415 15.5411 8.15916 15.242C9.00598 14.3533 10.5593 13 12.1667 13C13.7899 13 15.2046 14.3801 15.947 15.2681C16.2011 15.5721 15.9774 16 15.5812 16Z" fill="#000000" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <circle cx="12" cy="12" r="10" stroke="#000000" stroke-width="2"></circle> </g></svg>
+            </a>
+        </div>
+    </div>
+    <div class="content">
+        <div class="resort-header">
+            <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=500&q=80" alt="White Sand Hills Beach Resort">
+            <div class="resort-header-details">
+                <h1>White Sand Hills Beach Resort</h1>
+                <div class="rating">
+                    <div class="stars">★ ★ ★ ★ ☆</div>
+                    <div class="number-of-reviews">(120 reviews)</div>
+                </div>
+                <div class="location">
+                    Bisiao, Ivisan, Capiz
+                    <svg style="vertical-align: middle; margin-left: 6px;" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2C7.03 2 3 6.03 3 11c0 5.25 7.05 10.74 8.09 11.52a1 1 0 0 0 1.22 0C13.95 21.74 21 16.25 21 11c0-4.97-4.03-9-9-9zm0 17.88C9.14 17.1 5 13.61 5 11c0-3.86 3.14-7 7-7s7 3.14 7 7c0 2.61-4.14 6.1-7 8.88zm0-10.38A2.38 2.38 0 1 0 12 13.88 2.38 2.38 0 0 0 12 7.5z" fill="#4a90e2"/>
+                    </svg>
+                </div>
+                <div class="offer-images">
+                    <div class="room-img">
+                        <img src="https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=200&q=80" alt="Room">
+                    </div>
+                    <div class="cottage-img">
+                        <img src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=200&q=80" alt="Cottage">
+                    </div>
+                    <div class="activities-img">
+                        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=200&q=80" alt="Activities">
+                    </div>
+                    <div class="food-img">
+                        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=80" alt="Food">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="offer">
+            <img src="https://images.unsplash.com/photo-1465156799763-2c087c332922?auto=format&fit=crop&w=500&q=80" alt="Other Example">
+            <div class="offer-details">
+                <h1>Rooms</h1>
+                <div class="rating">
+                    <div class="stars">★ ★ ★ ☆ ☆</div>
+                    <div class="number-of-reviews">(45 reviews)</div>
+                </div>
+                <div class="location">
+                    Roxas City, Capiz
+                    <svg style="vertical-align: middle; margin-left: 6px;" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2C7.03 2 3 6.03 3 11c0 5.25 7.05 10.74 8.09 11.52a1 1 0 0 0 1.22 0C13.95 21.74 21 16.25 21 11c0-4.97-4.03-9-9-9zm0 17.88C9.14 17.1 5 13.61 5 11c0-3.86 3.14-7 7-7s7 3.14 7 7c0 2.61-4.14 6.1-7 8.88zm0-10.38A2.38 2.38 0 1 0 12 13.88 2.38 2.38 0 0 0 12 7.5z" fill="#4a90e2"/>
+                    </svg>
+                </div>
+                <div class="offer-images">
+                    <div class="room-one-img">
+                        <img src="https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=200&q=80" alt="Room">
+                    </div>
+                    <div class="room-two-img">
+                        <img src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=200&q=80" alt="Cottage">
+                    </div>
+                    <div class="room-three-img">
+                        <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=200&q=80" alt="Activities">
+                    </div>
+                    <div class="room-four-img">
+                        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=80" alt="Food">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="offer">
+            <img src="https://images.unsplash.com/photo-1465156799763-2c087c332922?auto=format&fit=crop&w=500&q=80" alt="Other Example">
+            <div class="offer-details">
+                <h1>Cottage</h1>
+                <div class="rating">
+                    <div class="stars">★ ★ ★ ☆ ☆</div>
+                    <div class="number-of-reviews">(45 reviews)</div>
+                </div>
+                <div class="location">
+                    Roxas City, Capiz
+                    <svg style="vertical-align: middle; margin-left: 6px;" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2C7.03 2 3 6.03 3 11c0 5.25 7.05 10.74 8.09 11.52a1 1 0 0 0 1.22 0C13.95 21.74 21 16.25 21 11c0-4.97-4.03-9-9-9zm0 17.88C9.14 17.1 5 13.61 5 11c0-3.86 3.14-7 7-7s7 3.14 7 7c0 2.61-4.14 6.1-7 8.88zm0-10.38A2.38 2.38 0 1 0 12 13.88 2.38 2.38 0 0 0 12 7.5z" fill="#4a90e2"/>
+                    </svg>
+                </div>
+                <div class="offer-images">
+                    <div class="cottage-one-img">
+                        <img src="https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=200&q=80" alt="Room">
+                    </div>
+                    <div class="cottage-two-img">
+                        <img src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=200&q=80" alt="Cottage">
+                    </div>
+                    <div class="cottage-three-img">
+                        <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=200&q=80" alt="Activities">
+                    </div>
+                    <div class="cottage-four-img">
+                        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=80" alt="Food">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="offer">
+            <img src="https://images.unsplash.com/photo-1465156799763-2c087c332922?auto=format&fit=crop&w=500&q=80" alt="Other Example">
+            <div class="offer-details">
+                <h1>Activities</h1>
+                <div class="rating">
+                    <div class="stars">★ ★ ★ ☆ ☆</div>
+                    <div class="number-of-reviews">(45 reviews)</div>
+                </div>
+                <div class="location">
+                    Roxas City, Capiz
+                    <svg style="vertical-align: middle; margin-left: 6px;" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2C7.03 2 3 6.03 3 11c0 5.25 7.05 10.74 8.09 11.52a1 1 0 0 0 1.22 0C13.95 21.74 21 16.25 21 11c0-4.97-4.03-9-9-9zm0 17.88C9.14 17.1 5 13.61 5 11c0-3.86 3.14-7 7-7s7 3.14 7 7c0 2.61-4.14 6.1-7 8.88zm0-10.38A2.38 2.38 0 1 0 12 13.88 2.38 2.38 0 0 0 12 7.5z" fill="#4a90e2"/>
+                    </svg>
+                </div>
+                <div class="offer-images">
+                    <div class="activities-one-img">
+                        <img src="https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=200&q=80" alt="Room">
+                    </div>
+                    <div class="activities-two-img">
+                        <img src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=200&q=80" alt="Cottage">
+                    </div>
+                    <div class="activities-three-img">
+                        <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=200&q=80" alt="Activities">
+                    </div>
+                    <div class="activities-four-img">
+                        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=80" alt="Food">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="offer">
+            <img src="https://images.unsplash.com/photo-1465156799763-2c087c332922?auto=format&fit=crop&w=500&q=80" alt="Other Example">
+            <div class="offer-details">
+                <h1>Foods</h1>
+                <div class="rating">
+                    <div class="stars">★ ★ ★ ☆ ☆</div>
+                    <div class="number-of-reviews">(45 reviews)</div>
+                </div>
+                <div class="location">
+                    Roxas City, Capiz
+                    <svg style="vertical-align: middle; margin-left: 6px;" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2C7.03 2 3 6.03 3 11c0 5.25 7.05 10.74 8.09 11.52a1 1 0 0 0 1.22 0C13.95 21.74 21 16.25 21 11c0-4.97-4.03-9-9-9zm0 17.88C9.14 17.1 5 13.61 5 11c0-3.86 3.14-7 7-7s7 3.14 7 7c0 2.61-4.14 6.1-7 8.88zm0-10.38A2.38 2.38 0 1 0 12 13.88 2.38 2.38 0 0 0 12 7.5z" fill="#4a90e2"/>
+                    </svg>
+                </div>
+                <div class="offer-images">
+                    <div class="food-one-img">
+                        <img src="https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=200&q=80" alt="Room">
+                    </div>
+                    <div class="food-two-img">
+                        <img src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=200&q=80" alt="Cottage">
+                    </div>
+                    <div class="food-three-img">
+                        <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=200&q=80" alt="Activities">
+                    </div>
+                    <div class="food-four-img">
+                        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=80" alt="Food">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

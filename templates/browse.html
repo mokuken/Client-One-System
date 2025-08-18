@@ -10,65 +10,13 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             height: 100vh;
             background: #CCFED8;
             background: linear-gradient(90deg, rgba(204, 254, 216, 1) 0%, rgba(148, 185, 255, 1) 100%);
             font-family: Georgia, 'Times New Roman', Times, serif;
         }
-
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 10vh;
-            padding: 0 100px;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-        }
-
-        .nav-links a {
-            margin-left: 20px;
-            text-decoration: none;
-            color: #333;
-            font-weight: bold;
-        }
-
-        .search-container {
-            position: relative;
-            width: 300px;
-        }
-
-        .search {
-            width: 100%;
-            padding: 10px 40px 10px 10px; /* right padding for icon */
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        .search-icon {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 20px;
-            height: 20px;
-            pointer-events: none;
-            fill: #888;
-        }
+        /* Navbar styles moved to partials/navbar.html */
 
         .content {
             display: flex;
@@ -237,20 +185,11 @@
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <p class="title">Ariva Ivisan</p>
-        <div class="nav-links">
-            <div class="search-container">
-                <input class="search" type="text" placeholder="Search...">
-                <svg class="search-icon" viewBox="0 0 24 24">
-                    <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" fill="none"/>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2"/>
-                </svg>
-            </div>
-            <a href="#" id="signUpLink">Sign Up</a>
-            <a href="#">Log in</a>
-        </div>
-    </div>
+    {% if session.user_id or session.owner_id %}
+        {% include 'partials/navbarLoggedIn.html' %}
+    {% else %}
+        {% include 'partials/navbar.html' %}
+    {% endif %}
     <div class="content">
         <div class="resort">
             <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=500&q=80" alt="White Sand Hills Beach Resort">
@@ -384,55 +323,7 @@
         </div>
     </div>
     <script>
-        // Show modal on "Log in" click
-        document.querySelectorAll('.nav-links a').forEach(function(link) {
-            if (link.textContent.trim() === "Log in") {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    document.getElementById('loginModal').style.display = 'flex';
-                });
-            }
-        });
-        // Hide modal when clicking outside the box (Customer)
-        document.getElementById('loginModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.style.display = 'none';
-            }
-        });
-        // Hide modal when clicking outside the box (Owner)
-        document.getElementById('ownerLoginModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.style.display = 'none';
-            }
-        });
-        // Show Owner Login Modal
-        document.getElementById('ownerLoginLink').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('loginModal').style.display = 'none';
-            document.getElementById('ownerLoginModal').style.display = 'flex';
-        });
-        // Show Customer Login Modal from Owner Modal
-        document.getElementById('customerLoginLink').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('ownerLoginModal').style.display = 'none';
-            document.getElementById('loginModal').style.display = 'flex';
-        });
-        // Show sign up selection modal
-        document.getElementById('signUpLink').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('signUpModal').style.display = 'flex';
-        });
-        // Hide sign up modal when clicking outside the box
-        document.getElementById('signUpModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.style.display = 'none';
-            }
-        });
-        // Hide sign up modal on cancel
-        document.getElementById('closeSignUpModal').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('signUpModal').style.display = 'none';
-        });
+
     </script>
 </body>
 </html>

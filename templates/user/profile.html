@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(90deg, rgba(204, 254, 216, 1) 0%, rgba(148, 185, 255, 1) 100%);
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+        .profile-main-container {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            width: 95%;
+            max-width: 900px;
+            padding: 40px 32px 32px 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 48px auto 32px auto;
+        }
+        .profile-title {
+            color: #2193b0;
+            font-size: 2rem;
+            margin-bottom: 24px;
+            letter-spacing: 1px;
+        }
+        .user-container {
+            display: flex;
+            width: 100%;
+            gap: 32px;
+            margin-bottom: 24px;
+        }
+        .profile-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+            min-width: 200px;
+        }
+        .profile-img {
+            border: 2px solid #b2ebf2;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: #eaeaea url('/static/images/bg.webp') center/cover no-repeat;
+            margin-bottom: 8px;
+        }
+        .profile-username {
+            color: #888;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+        .user-information {
+            display: flex;
+            gap: 24px;
+            width: 100%;
+            justify-content: center;
+        }
+        .user-information > div {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 250px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #2193b0;
+            margin-bottom: 4px;
+        }
+        .info-value {
+            color: #333;
+            margin-bottom: 12px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 1rem;
+            border: 1px solid #b2ebf2;
+        }
+        @media (max-width: 900px) {
+            .profile-main-container { padding: 24px 8px; }
+            .user-container { flex-direction: column; align-items: center; gap: 18px; }
+            .user-information { flex-direction: column; gap: 18px; align-items: center; }
+            .user-information > div { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    {% include 'partials/navbarLoggedIn.html' %}
+    <div class="profile-main-container">
+        <div class="profile-title">Your Profile Information</div>
+        <div style="width:100%; display:flex; justify-content:flex-end; margin-bottom:12px;">
+        </div>
+        <div class="user-container">
+            <div class="profile-container">
+                <div class="profile-img"></div>
+                <h2>{{ user.name }}</h2>
+                <div class="profile-username">@{{ user.username }}</div>
+                <form action="{{ url_for('logout') }}" method="get" style="margin-top:10px;">
+                    <button type="submit" class="modern-button" style="background:linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%); color:#fff; border:none; border-radius:8px; font-size:1rem; font-weight:bold; padding:0.6rem 1.6rem; cursor:pointer;">Logout</button>
+                </form>
+            </div>
+            <div class="user-information">
+                <div>
+                    <div class="info-label">Email</div>
+                    <div class="info-value">{{ user.email }}</div>
+                    <div class="info-label">Birthdate</div>
+                    <div class="info-value">{{ user.birthdate }}</div>
+                    <div class="info-label">Gender</div>
+                    <div class="info-value">{{ user.gender }}</div>
+                    <div class="info-label">Address</div>
+                    <div class="info-value">{{ user.address }}</div>
+                    <div class="info-label">Age</div>
+                    <div class="info-value">{{ user.age }}</div>
+                </div>
+                <div>
+                    <div class="info-label">Contact Number</div>
+                    <div class="info-value">{{ user.contact_number }}</div>
+                    <div class="info-label">Facebook</div>
+                    <div class="info-value">{{ user.facebook }}</div>
+                    <div class="info-label">Emergency Contact Name</div>
+                    <div class="info-value">{{ user.emergency_name }}</div>
+                    <div class="info-label">Emergency Contact Number</div>
+                    <div class="info-value">{{ user.emergency_number }}</div>
+                    <div class="info-label">Relationship</div>
+                    <div class="info-value">{{ user.relationship }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

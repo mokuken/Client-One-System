@@ -310,6 +310,24 @@
                 </div>
             </div>
         </div>
+        <!-- Calendar Modal -->
+        <div id="calendarModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:1000; justify-content:center; align-items:center;">
+            <div class="modal-content" style="background:#f7f7f7; border-radius:16px; padding:32px; min-width:700px; min-height:400px; box-shadow:0 8px 32px rgba(0,0,0,0.18); position:relative; display:flex; flex-direction:row; gap:32px;">
+                <!-- Action buttons -->
+                <div id="calendar-actions" style="position:absolute; left:0; right:0; bottom:24px; display:flex; justify-content:center; gap:32px;">
+                    <button id="calendar-confirm" style="padding:12px 32px; background:#4a90e2; color:#fff; border:none; border-radius:8px; font-size:1.1rem; font-weight:bold; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.08);">Confirm</button>
+                    <button id="calendar-cancel" style="padding:12px 32px; background:#e57373; color:#fff; border:none; border-radius:8px; font-size:1.1rem; font-weight:bold; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.08);">Cancel</button>
+                </div>
+                <div style="flex:1;">
+                    <div style="font-size:2rem; font-weight:bold; color:#e74c3c; margin-bottom:8px;">2025 <span style="background:#fff; border-radius:12px; padding:4px 16px; border:2px solid #222; font-size:1.3rem; margin-left:8px;">Check In</span> <span style="float:right; color:#333; font-size:1.2rem;">April</span></div>
+                    <div id="calendarCheckIn"></div>
+                </div>
+                <div style="flex:1;">
+                    <div style="font-size:2rem; font-weight:bold; color:#e74c3c; margin-bottom:8px;">2025 <span style="background:#fff; border-radius:12px; padding:4px 16px; border:2px solid #222; font-size:1.3rem; margin-left:8px;">Check Out</span> <span style="float:right; color:#333; font-size:1.2rem;">April</span></div>
+                    <div id="calendarCheckOut"></div>
+                </div>
+            </div>
+        </div>
         <div class="offer-header" style="display: flex;align-items: center;justify-content: center;">
             <div >
                 <h1>Rooms</h1>
@@ -337,7 +355,7 @@
                     <h4>With Shower and Toilet</h4>
                 </div>
             </div>
-            <button>Check Date</button>
+            <button class="check-date-btn">Check Date</button>
         </div>
         <div class="offer">
             <img src="https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=200&q=80" alt="Room">
@@ -361,8 +379,106 @@
                     <h4>With Shower and Toilet</h4>
                 </div>
             </div>
-            <button>Check Date</button>
+            <button class="check-date-btn">Check Date</button>
         </div>
     </div>
 </body>
+<script>
+// Calendar logic
+const unavailableDates = [1, 4, 12, 15, 16, 17, 18, 19]; // Example unavailable days in April 2025
+const today = new Date();
+const currentYear = 2025;
+const currentMonth = 3; // April (0-indexed)
+
+function renderCalendar(containerId, selectedRange, isCheckIn) {
+    const daysInMonth = 30;
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    let html = '<table style="width:100%; border-collapse:collapse; background:transparent;">';
+    html += '<tr>';
+    ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].forEach(d => {
+        html += `<th style='padding:6px; color:#234; background:#e3f2fd;'>${d}</th>`;
+    });
+    html += '</tr><tr>';
+    let day = 1;
+    for(let i=0; i<firstDay; i++) html += '<td></td>';
+    for(let i=firstDay; i<7; i++) {
+        html += dayCell(day++, selectedRange, isCheckIn);
+    }
+    html += '</tr>';
+    while(day <= daysInMonth) {
+        html += '<tr>';
+        for(let i=0; i<7; i++) {
+            if(day > daysInMonth) html += '<td></td>';
+            else html += dayCell(day++, selectedRange, isCheckIn);
+        }
+        html += '</tr>';
+    }
+    html += '</table>';
+    document.getElementById(containerId).innerHTML = html;
+}
+
+function dayCell(day, selectedRange, isCheckIn) {
+    const unavailable = unavailableDates.includes(day);
+    let style = 'padding:8px; text-align:center; border-radius:8px; cursor:pointer; font-weight:bold;';
+    let bg = '';
+    let color = unavailable ? '#fff' : '#222';
+    if(unavailable) bg = 'background:#e57373;';
+    else if(selectedRange && selectedRange.includes(day)) bg = 'background:#b3e5fc;';
+    else if(isToday(day)) bg = 'background:#81c784;';
+    return `<td style='${style}${bg}color:${color};' ${unavailable ? '' : `onclick='selectDate(${day},${isCheckIn})'`}>
+        ${day}
+    </td>`;
+}
+
+function isToday(day) {
+    return today.getFullYear() === currentYear && today.getMonth() === currentMonth && today.getDate() === day;
+}
+
+let selectedCheckIn = null;
+let selectedCheckOut = null;
+
+function selectDate(day, isCheckIn) {
+    if(isCheckIn) {
+        selectedCheckIn = day;
+        selectedCheckOut = null;
+        renderCalendar('calendarCheckIn', [day], true);
+        renderCalendar('calendarCheckOut', [], false);
+    } else {
+        if(!selectedCheckIn) return;
+        if(day <= selectedCheckIn) return;
+        // Check if any unavailable dates in range
+        for(let d=selectedCheckIn; d<=day; d++) {
+            if(unavailableDates.includes(d)) return;
+        }
+        selectedCheckOut = day;
+        let range = [];
+        for(let d=selectedCheckIn; d<=day; d++) range.push(d);
+        renderCalendar('calendarCheckIn', [selectedCheckIn], true);
+        renderCalendar('calendarCheckOut', range, false);
+    }
+}
+
+// Modal logic
+document.querySelectorAll('.check-date-btn').forEach(btn => {
+    btn.onclick = function() {
+        document.getElementById('calendarModal').style.display = 'flex';
+        selectedCheckIn = null;
+        selectedCheckOut = null;
+        renderCalendar('calendarCheckIn', [], true);
+        renderCalendar('calendarCheckOut', [], false);
+    };
+});
+// Confirm and Cancel button logic
+document.getElementById('calendar-cancel').onclick = function() {
+    document.getElementById('calendarModal').style.display = 'none';
+};
+document.getElementById('calendar-confirm').onclick = function() {
+    if(selectedCheckIn && selectedCheckOut) {
+        alert('Booking from April ' + selectedCheckIn + ' to April ' + selectedCheckOut);
+        document.getElementById('calendarModal').style.display = 'none';
+    } else {
+        alert('Please select a valid check-in and check-out date.');
+    }
+};
+</script>
 </html>

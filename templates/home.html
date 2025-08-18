@@ -10,7 +10,7 @@
             padding: 0;
             min-height: 100vh;
             font-family: 'Segoe UI', Arial, sans-serif;
-            background: url(assets/images/bg.webp) center/cover no-repeat;
+            background: url("{{ url_for('static', filename='images/bg.webp') }}") center/cover no-repeat;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -66,7 +66,7 @@
         <!-- <img src="beach-logo.png" alt="IVISAN Beach Resort Logo" class="beach-logo"> -->
         <h1>Welcome to Ariva Ivisan🏖️</h1>
         <p>Browse, reserve, and enjoy the finest beach resort in just a few clicks.</p>
-        <a class="modern-button" href="browse.html">Start Browsing now &nbsp;&rarr;</a>
+        <a class="modern-button" href="{{ url_for('browse') }}">Start Browsing now &nbsp;&rarr;</a>
     </div>
 </body>
 </html>

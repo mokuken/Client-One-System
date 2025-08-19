@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -43,7 +42,23 @@ def browse():
 
 @app.route("/user/profile")
 def user_profile():
-    return render_template("user/profile.html")
+    user_data = None
+    if "user_id" in session:
+        user_data = {
+            "username": session.get("username"),
+            "name": session.get("name"),
+            "email": session.get("email"),
+            "birthdate": session.get("birthdate"),
+            "gender": session.get("gender"),
+            "address": session.get("address"),
+            "age": session.get("age"),
+            "contact_number": session.get("contact_number"),
+            "facebook": session.get("facebook"),
+            "emergency_name": session.get("emergency_name"),
+            "emergency_number": session.get("emergency_number"),
+            "relationship": session.get("relationship"),
+        }
+    return render_template("user/profile.html", user=user_data)
 
 @app.route("/userSignUp", methods=["GET", "POST"])
 def user_sign_up():
@@ -118,6 +133,9 @@ def login():
         owner = Owner.query.filter_by(username=username).first()
         if owner and check_password_hash(owner.password, password):
             session["owner_id"] = owner.id
+            session["owner_username"] = owner.username
+            session["owner_name"] = owner.name
+            session["owner_email"] = owner.email
             flash("Logged in as owner!", "success")
             return redirect(url_for("home"))
         else:
@@ -126,6 +144,18 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
             session["user_id"] = user.id
+            session["username"] = user.username
+            session["name"] = user.name
+            session["email"] = user.email
+            session["birthdate"] = user.birthdate
+            session["gender"] = user.gender
+            session["address"] = user.address
+            session["age"] = user.age
+            session["contact_number"] = user.contact_number
+            session["facebook"] = user.facebook
+            session["emergency_name"] = user.emergency_name
+            session["emergency_number"] = user.emergency_number
+            session["relationship"] = user.relationship
             flash("Logged in as user!", "success")
             return redirect(url_for("browse"))
         else:

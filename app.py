@@ -168,6 +168,10 @@ def logout():
     flash("Logged out.", "info")
     return redirect(url_for("home"))
 
+@app.route('/viewResortMain')
+def view_resort_main():
+    return render_template('viewResortMain.html')
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()

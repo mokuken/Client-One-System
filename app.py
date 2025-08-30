@@ -30,6 +30,20 @@ class Owner(db.Model):
     password = db.Column(db.String(200), nullable=False)
     name = db.Column(db.String(120))
     email = db.Column(db.String(120))
+    birthdate = db.Column(db.String(50))
+    gender = db.Column(db.String(20))
+    address = db.Column(db.String(200))
+    resort_address = db.Column(db.String(200))
+    age = db.Column(db.String(10))
+    contact_number = db.Column(db.String(30))
+    facebook = db.Column(db.String(120))
+    resort_name = db.Column(db.String(200))
+    business_id = db.Column(db.String(120))
+    tax_id = db.Column(db.String(120))
+    bank_account = db.Column(db.String(120))
+    gcash = db.Column(db.String(120))
+    paymaya = db.Column(db.String(120))
+    paypal = db.Column(db.String(120))
     # Add other fields as needed
 
 @app.route("/")
@@ -109,15 +123,54 @@ def user_sign_up():
 @app.route("/ownerSignUp", methods=["GET", "POST"])
 def owner_sign_up():
     if request.method == "POST":
+        # collect all form fields present in ownerSignUp.html
         username = request.form.get("username")
         password = request.form.get("password")
+        confirm_password = request.form.get("confirm_password")
         name = request.form.get("name")
         email = request.form.get("email")
+        birthdate = request.form.get("birthdate")
+        gender = request.form.get("gender")
+        address = request.form.get("address")
+        resort_address = request.form.get("resort_address")
+        age = request.form.get("age")
+        contact_number = request.form.get("contact_number")
+        facebook = request.form.get("facebook")
+        resort_name = request.form.get("resort_name")
+        business_id = request.form.get("business_id")
+        tax_id = request.form.get("tax_id")
+        bank_account = request.form.get("bank_account")
+        gcash = request.form.get("gcash")
+        paymaya = request.form.get("paymaya")
+        paypal = request.form.get("paypal")
+
+        if password != confirm_password:
+            flash("Passwords do not match.", "danger")
+            return redirect(url_for("owner_sign_up"))
         if Owner.query.filter_by(username=username).first():
             flash("Username already exists.", "danger")
             return redirect(url_for("owner_sign_up"))
         hashed_pw = generate_password_hash(password)
-        owner = Owner(username=username, password=hashed_pw, name=name, email=email)
+        owner = Owner(
+            username=username,
+            password=hashed_pw,
+            name=name,
+            email=email,
+            birthdate=birthdate,
+            gender=gender,
+            address=address,
+            resort_address=resort_address,
+            age=age,
+            contact_number=contact_number,
+            facebook=facebook,
+            resort_name=resort_name,
+            business_id=business_id,
+            tax_id=tax_id,
+            bank_account=bank_account,
+            gcash=gcash,
+            paymaya=paymaya,
+            paypal=paypal
+        )
         db.session.add(owner)
         db.session.commit()
         flash("Owner registration successful! Please log in.", "success")

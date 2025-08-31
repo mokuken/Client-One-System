@@ -74,6 +74,37 @@ def user_profile():
         }
     return render_template("user/profile.html", user=user_data)
 
+
+@app.route("/owner/profile")
+def owner_profile():
+    owner_data = None
+    if "owner_id" in session:
+        owner_data = {
+            "username": session.get("owner_username"),
+            "name": session.get("owner_name"),
+            "email": session.get("owner_email"),
+            "birthdate": session.get("owner_birthdate"),
+            "gender": session.get("owner_gender"),
+            "address": session.get("owner_address"),
+            "resort_address": session.get("owner_resort_address"),
+            "age": session.get("owner_age"),
+            "contact_number": session.get("owner_contact_number"),
+            "facebook": session.get("owner_facebook"),
+            "resort_name": session.get("owner_resort_name"),
+            "business_id": session.get("owner_business_id"),
+            "tax_id": session.get("owner_tax_id"),
+            "bank_account": session.get("owner_bank_account"),
+            "gcash": session.get("owner_gcash"),
+            "paymaya": session.get("owner_paymaya"),
+            "paypal": session.get("owner_paypal"),
+            # owner may not have emergency/contact relationship fields used by the user template;
+            # those will be None if not set.
+            "emergency_name": session.get("emergency_name"),
+            "emergency_number": session.get("emergency_number"),
+            "relationship": session.get("relationship"),
+        }
+    return render_template("owner/profile.html", user=owner_data)
+
 @app.route("/userSignUp", methods=["GET", "POST"])
 def user_sign_up():
     if request.method == "POST":
@@ -185,12 +216,31 @@ def login():
     if user_type == "owner":
         owner = Owner.query.filter_by(username=username).first()
         if owner and check_password_hash(owner.password, password):
+            # store owner fields in session similar to user
             session["owner_id"] = owner.id
             session["owner_username"] = owner.username
             session["owner_name"] = owner.name
             session["owner_email"] = owner.email
+            session["owner_birthdate"] = owner.birthdate
+            session["owner_gender"] = owner.gender
+            session["owner_address"] = owner.address
+            session["owner_resort_address"] = owner.resort_address
+            session["owner_age"] = owner.age
+            session["owner_contact_number"] = owner.contact_number
+            session["owner_facebook"] = owner.facebook
+            session["owner_resort_name"] = owner.resort_name
+            session["owner_business_id"] = owner.business_id
+            session["owner_tax_id"] = owner.tax_id
+            session["owner_bank_account"] = owner.bank_account
+            session["owner_gcash"] = owner.gcash
+            session["owner_paymaya"] = owner.paymaya
+            session["owner_paypal"] = owner.paypal
+            # keep consistency for template fields (if used)
+            session["emergency_name"] = None
+            session["emergency_number"] = None
+            session["relationship"] = None
             flash("Logged in as owner!", "success")
-            return redirect(url_for("home"))
+            return redirect(url_for("browse"))
         else:
             flash("Invalid owner credentials.", "danger")
     else:

@@ -201,8 +201,10 @@
     </style>
 </head>
 <body>
-    {% if session.user_id or session.owner_id %}
-        {% include 'partials/navbarLoggedIn.html' %}
+    {% if session.user_id %}
+        {% include 'partials/navbarLoggedInCustomer.html' %}
+    {% elif session.owner_id %}
+        {% include 'partials/navbarLoggedInOwner.html' %}
     {% else %}
         {% include 'partials/navbar.html' %}
     {% endif %}

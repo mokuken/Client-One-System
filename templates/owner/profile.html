@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Profile</title>
+    <title>Owner Profile</title>
     <style>
         * {
             margin: 0;
@@ -132,6 +132,8 @@
             flex-direction: row;
             gap: 40px;
             height: 100%;
+            flex: 1;       /* allow the box to grow inside .main */
+            min-height: 0; /* necessary so child with overflow can shrink/scroll */
         }
         .profile-container {
             background: linear-gradient(135deg, #f5faff 0%, #e3f0ff 100%);
@@ -179,6 +181,8 @@
             gap: 24px 32px;
             align-items: stretch;
             height: 100%;
+            overflow: auto;      /* enable vertical scrolling when needed */
+            box-sizing: border-box;
         }
         .user-information > div {
             display: flex;
@@ -201,28 +205,50 @@
     </style>
 </head>
 <body>
-    {% if session.user_id or session.owner_id %}
-        {% include 'partials/navbarLoggedIn.html' %}
+    {% if session.user_id %}
+        {% include 'partials/navbarLoggedInCustomer.html' %}
+    {% elif session.owner_id %}
+        {% include 'partials/navbarLoggedInOwner.html' %}
     {% else %}
         {% include 'partials/navbar.html' %}
     {% endif %}
+    
     <div class="content">
         <div class="sidebar" style="display: flex; flex-direction: column; height: 100%; justify-content: flex-start;">
             <a class="active" href="#">
-                <svg fill="#000000" viewBox="-4.5 0 32 32" width="20px" version="1.1" xmlns="http://www.w3.org/2000/svg"><title>home</title><path d="M19.469 12.594l3.625 3.313c0.438 0.406 0.313 0.719-0.281 0.719h-2.719v8.656c0 0.594-0.5 1.125-1.094 1.125h-4.719v-6.063c0-0.594-0.531-1.125-1.125-1.125h-2.969c-0.594 0-1.125 0.531-1.125 1.125v6.063h-4.719c-0.594 0-1.125-0.531-1.125-1.125v-8.656h-2.688c-0.594 0-0.719-0.313-0.281-0.719l10.594-9.625c0.438-0.406 1.188-0.406 1.656 0l2.406 2.156v-1.719c0-0.594 0.531-1.125 1.125-1.125h2.344c0.594 0 1.094 0.531 1.094 1.125v5.875z"></path></svg>
+                <!-- Profile icon -->
+                <svg fill="#000000" viewBox="0 0 24 24" width="20px" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.7 0 4.5-1.8 4.5-4.5S14.7 3 12 3 7.5 4.8 7.5 7.5 9.3 12 12 12zm0 2c-3 0-9 1.5-9 4.5V21h18v-2.5c0-3-6-4.5-9-4.5z"/></svg>
                 <p>Profile</p>
             </a>
             <a href="#">
-                <svg viewBox="0 0 24 24" width="20px" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 20.5C16.1421 20.5 19.5 17.1421 19.5 13C19.5 8.85786 16.1421 5.5 12 5.5C7.85786 5.5 4.5 8.85786 4.5 13C4.5 17.1421 7.85786 20.5 12 20.5Z" stroke="#000" stroke-width="2"/><path d="M12 8V13L15 15" stroke="#000" stroke-width="2"/></svg>
-                <p>Bookings</p>
+                <!-- Dashboard icon -->
+                <svg viewBox="0 0 24 24" width="20px" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8v-10h-8v10zm0-18v6h8V3h-8z" fill="#4a90e2"/></svg>
+                <p>Dashboard</p>
             </a>
             <a href="#">
-                <svg viewBox="0 0 24 24" width="20px" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C7.03 2 3 6.03 3 11c0 5.25 7.05 10.74 8.09 11.52a1 1 0 0 0 1.22 0C13.95 21.74 21 16.25 21 11c0-4.97-4.03-9-9-9zm0 17.88C9.14 17.1 5 13.61 5 11c0-3.86 3.14-7 7-7s7 3.14 7 7c0 2.61-4.14 6.1-7 8.88zm0-10.38A2.38 2.38 0 1 0 12 13.88 2.38 2.38 0 0 0 12 7.5z" fill="#4a90e2"/></svg>
-                <p>Resorts</p>
+                <!-- Reservations icon -->
+                <svg viewBox="0 0 24 24" width="20px" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="5" width="18" height="16" rx="2" stroke="#000" stroke-width="2"/><path d="M16 3v4M8 3v4" stroke="#000" stroke-width="2"/><path d="M3 9h18" stroke="#000" stroke-width="2"/></svg>
+                <p>Reservations</p>
             </a>
             <a href="#">
-                <svg viewBox="0 0 24 24" width="20px" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 10H17M10 14H17M7 10H7.01M7 14H7.01M21.0039 12C21.0039 16.9706 16.9745 21 12.0039 21C9.9675 21 3.00463 21 3.00463 21C3.00463 21 4.56382 17.2561 3.93982 16.0008C3.34076 14.7956 3.00391 13.4372 3.00391 12C3.00391 7.02944 7.03334 3 12.0039 3C16.9745 3 21.0039 7.02944 21.0039 12Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                <p>Chats</p>
+                <!-- Rooms icon -->
+                <svg viewBox="0 0 24 24" width="20px" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="8" width="16" height="12" rx="2" stroke="#000" stroke-width="2"/><path d="M9 16h6" stroke="#000" stroke-width="2"/><rect x="7" y="3" width="10" height="5" rx="1" stroke="#000" stroke-width="2"/></svg>
+                <p>Rooms</p>
+            </a>
+            <a href="#">
+                <!-- Cottages icon -->
+                <svg viewBox="0 0 24 24" width="20px" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 12l9-7 9 7v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7z" stroke="#000" stroke-width="2"/><path d="M9 21V9h6v12" stroke="#000" stroke-width="2"/></svg>
+                <p>Cottages</p>
+            </a>
+            <a href="#">
+                <!-- Foods icon -->
+                <svg viewBox="0 0 24 24" width="20px" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6h16M4 10h16M7 14h10M9 18h6" stroke="#000" stroke-width="2"/><circle cx="12" cy="20" r="1" fill="#000"/></svg>
+                <p>Foods</p>
+            </a>
+            <a href="#">
+                <!-- Activities icon -->
+                <svg viewBox="0 0 24 24" width="20px" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4" stroke="#000" stroke-width="2"/><path d="M6 22v-2a6 6 0 0 1 12 0v2" stroke="#000" stroke-width="2"/></svg>
+                <p>Activities</p>
             </a>
             <div style="flex:1"></div>
             <form action="{{ url_for('logout') }}" method="get" style="width:90%;">
@@ -238,29 +264,68 @@
                     <div class="profile-img"></div>
                     <h2>{{ user.name }}</h2>
                     <div class="profile-username">@{{ user.username }}</div>
+                    {% if user.resort_name %}
+                        <div style="margin-top:8px;color:#555;font-weight:600;">Resort: {{ user.resort_name }}</div>
+                    {% endif %}
+                    {% if user.resort_address %}
+                        <div style="color:#777;font-size:0.95rem;">Location: {{ user.resort_address }}</div>
+                    {% endif %}
                 </div>
                 <div class="user-information">
                     <div>
                         <div class="info-label">Email</div>
                         <div class="info-value">{{ user.email }}</div>
+
                         <div class="info-label">Birthdate</div>
                         <div class="info-value">{{ user.birthdate }}</div>
+
                         <div class="info-label">Gender</div>
                         <div class="info-value">{{ user.gender }}</div>
+
                         <div class="info-label">Address</div>
                         <div class="info-value">{{ user.address }}</div>
+
+                        <div class="info-label">Resort Address</div>
+                        <div class="info-value">{{ user.resort_address }}</div>
+
                         <div class="info-label">Age</div>
                         <div class="info-value">{{ user.age }}</div>
+
+                        <div class="info-label">Resort Name</div>
+                        <div class="info-value">{{ user.resort_name }}</div>
                     </div>
                     <div>
                         <div class="info-label">Contact Number</div>
                         <div class="info-value">{{ user.contact_number }}</div>
+
                         <div class="info-label">Facebook</div>
                         <div class="info-value">{{ user.facebook }}</div>
+
+                        <div class="info-label">Business ID</div>
+                        <div class="info-value">{{ user.business_id }}</div>
+
+                        <div class="info-label">Tax ID</div>
+                        <div class="info-value">{{ user.tax_id }}</div>
+
+                        <div class="info-label">Bank Account</div>
+                        <div class="info-value">{{ user.bank_account }}</div>
+
+                        <div class="info-label">GCash</div>
+                        <div class="info-value">{{ user.gcash }}</div>
+
+                        <div class="info-label">PayMaya</div>
+                        <div class="info-value">{{ user.paymaya }}</div>
+
+                        <div class="info-label">PayPal</div>
+                        <div class="info-value">{{ user.paypal }}</div>
+
+                        <!-- keep emergency/contact fields (may be None for owners) -->
                         <div class="info-label">Emergency Contact Name</div>
                         <div class="info-value">{{ user.emergency_name }}</div>
+
                         <div class="info-label">Emergency Contact Number</div>
                         <div class="info-value">{{ user.emergency_number }}</div>
+
                         <div class="info-label">Relationship</div>
                         <div class="info-value">{{ user.relationship }}</div>
                     </div>

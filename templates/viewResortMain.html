@@ -214,11 +214,14 @@
     </style>
 </head>
 <body>
-    {% if session.user_id or session.owner_id %}
-        {% include 'partials/navbarLoggedIn.html' %}
+    {% if session.user_id %}
+        {% include 'partials/navbarLoggedInCustomer.html' %}
+    {% elif session.owner_id %}
+        {% include 'partials/navbarLoggedInOwner.html' %}
     {% else %}
         {% include 'partials/navbar.html' %}
     {% endif %}
+    
     <div class="content">
         <div class="resort-header">
             <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=500&q=80" alt="White Sand Hills Beach Resort">

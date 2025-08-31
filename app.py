@@ -105,6 +105,39 @@ def owner_profile():
         }
     return render_template("owner/profile.html", user=owner_data)
 
+@app.route("/owner/dashboard")
+def owner_dashboard():
+    # Build owner context from session / DB so the template always has `owner`
+    owner = None
+    current_count = 0
+    upcoming_count = 0
+    pending_count = 0
+    current_guests = []
+
+    if "owner_id" in session:
+        owner_obj = Owner.query.get(session["owner_id"])
+        if owner_obj:
+            owner = {
+                "resort_name": owner_obj.resort_name,
+                "resort_address": owner_obj.resort_address,
+                "name": owner_obj.name,
+                "contact_number": owner_obj.contact_number,
+                # optional fields (if you add them to Owner model)
+                "cover_photo": getattr(owner_obj, "cover_photo", None),
+                "avatar": getattr(owner_obj, "avatar", None),
+            }
+
+    # TODO: replace with real queries once you add Reservation/Booking models.
+    # For now, pass defaults so template renders without errors.
+    return render_template(
+        "owner/dashboard.html",
+        owner=owner,
+        current_count=current_count,
+        upcoming_count=upcoming_count,
+        pending_count=pending_count,
+        current_guests=current_guests,
+    )
+
 @app.route("/userSignUp", methods=["GET", "POST"])
 def user_sign_up():
     if request.method == "POST":

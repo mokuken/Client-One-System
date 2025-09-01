@@ -52,7 +52,8 @@ def home():
 
 @app.route("/browse")
 def browse():
-    return render_template("browse.html")
+    owners = Owner.query.all()
+    return render_template("browse.html", owners=owners)
 
 @app.route("/user/profile")
 def user_profile():
@@ -137,6 +138,18 @@ def owner_dashboard():
         pending_count=pending_count,
         current_guests=current_guests,
     )
+
+@app.route("/owner/reservations")
+def owner_reservations():
+    return render_template("owner/reservations.html")
+
+@app.route("/owner/rooms")
+def owner_rooms():
+    return render_template("owner/rooms.html")
+
+@app.route("/owner/cottages")
+def owner_cottages():
+    return render_template("owner/cottages.html")
 
 @app.route("/userSignUp", methods=["GET", "POST"])
 def user_sign_up():
@@ -306,7 +319,11 @@ def logout():
 
 @app.route('/viewResortMain')
 def view_resort_main():
-    return render_template('viewResortMain.html')
+    owner_id = request.args.get('owner_id')
+    resort = None
+    if owner_id:
+        resort = Owner.query.get(owner_id)
+    return render_template('viewResortMain.html', resort=resort)
 
 if __name__ == '__main__':
     with app.app_context():

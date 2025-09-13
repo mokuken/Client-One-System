@@ -93,6 +93,26 @@ class Cottage(db.Model):
     owner = db.relationship('Owner', backref=db.backref('cottages', lazy=True))
 
 
+class Food(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=True)
+    name = db.Column(db.String(200), nullable=False)
+    size = db.Column(db.String(100))
+    capacity = db.Column(db.String(50))
+    price = db.Column(db.String(50))
+    other_feature1 = db.Column(db.String(200))
+    other_feature2 = db.Column(db.String(200))
+    other_feature3 = db.Column(db.String(200))
+    other_feature4 = db.Column(db.String(200))
+    image1 = db.Column(db.String(300))
+    image2 = db.Column(db.String(300))
+    image3 = db.Column(db.String(300))
+    image4 = db.Column(db.String(300))
+    image5 = db.Column(db.String(300))
+
+    owner = db.relationship('Owner', backref=db.backref('foods', lazy=True))
+
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -385,6 +405,122 @@ def owner_cottages():
     else:
         cottages = Cottage.query.all()
     return render_template('owner/cottages.html', cottages=cottages)
+
+
+@app.route("/owner/foods", methods=["GET","POST"]) 
+def owner_foods():
+    # list or create food items
+    if request.method == 'POST':
+        if 'owner_id' not in session:
+            flash('You must be logged in as owner to add foods.', 'danger')
+            return redirect(url_for('owner_foods'))
+        owner_id = session['owner_id']
+        name = request.form.get('food_name') or 'Untitled Food'
+        size = request.form.get('size')
+        capacity = request.form.get('capacity')
+        price = request.form.get('price')
+        of1 = request.form.get('other_feature1')
+        of2 = request.form.get('other_feature2')
+        of3 = request.form.get('other_feature3')
+        of4 = request.form.get('other_feature4')
+
+        filenames = [None]*5
+        for i in range(1,6):
+            file = request.files.get(f'image{i}')
+            if file and file.filename and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                name_only, ext = os.path.splitext(filename)
+                uniq = f"{name_only}_{owner_id}_{uuid.uuid4().hex}_{i}{ext}"
+                save_path = os.path.join(app.config['UPLOAD_FOLDER'], uniq)
+                file.save(save_path)
+                filenames[i-1] = os.path.join('uploads', uniq).replace('\\','/')
+
+        food = Food(
+            owner_id=owner_id,
+            name=name,
+            size=size,
+            capacity=capacity,
+            price=price,
+            other_feature1=of1,
+            other_feature2=of2,
+            other_feature3=of3,
+            other_feature4=of4,
+            image1=filenames[0],
+            image2=filenames[1],
+            image3=filenames[2],
+            image4=filenames[3],
+            image5=filenames[4]
+        )
+        db.session.add(food)
+        db.session.commit()
+        flash('Food item added.', 'success')
+        return redirect(url_for('owner_foods'))
+
+    foods = []
+    if 'owner_id' in session:
+        foods = Food.query.filter_by(owner_id=session['owner_id']).all()
+    else:
+        foods = Food.query.all()
+    return render_template('owner/foods.html', foods=foods)
+
+
+@app.route('/owner/foods/edit/<int:food_id>', methods=['POST'])
+def edit_food(food_id):
+    food = Food.query.get_or_404(food_id)
+    if 'owner_id' not in session or session['owner_id'] != food.owner_id:
+        flash('Not authorized to edit this food item.', 'danger')
+        return redirect(url_for('owner_foods'))
+
+    food.name = request.form.get('food_name') or food.name
+    food.size = request.form.get('size') or food.size
+    food.capacity = request.form.get('capacity') or food.capacity
+    food.price = request.form.get('price') or food.price
+    food.other_feature1 = request.form.get('other_feature1') or food.other_feature1
+    food.other_feature2 = request.form.get('other_feature2') or food.other_feature2
+    food.other_feature3 = request.form.get('other_feature3') or food.other_feature3
+    food.other_feature4 = request.form.get('other_feature4') or food.other_feature4
+
+    # handle delete flags
+    for i in range(1,6):
+        if request.form.get(f'delete_image{i}') == '1':
+            old = getattr(food, f'image{i}')
+            if old:
+                _delete_static_file(old)
+            setattr(food, f'image{i}', None)
+
+    # replacements
+    for i in range(1,6):
+        file = request.files.get(f'image{i}')
+        if file and file.filename and allowed_file(file.filename):
+            old = getattr(food, f'image{i}')
+            if old:
+                _delete_static_file(old)
+            filename = secure_filename(file.filename)
+            name_only, ext = os.path.splitext(filename)
+            uniq = f"{name_only}_{food.owner_id}_{uuid.uuid4().hex}_{i}{ext}"
+            save_path = os.path.join(app.config['UPLOAD_FOLDER'], uniq)
+            file.save(save_path)
+            setattr(food, f'image{i}', os.path.join('uploads', uniq).replace('\\','/'))
+
+    db.session.commit()
+    flash('Food updated.', 'success')
+    return redirect(url_for('owner_foods'))
+
+
+@app.route('/owner/foods/delete/<int:food_id>', methods=['POST'])
+def delete_food(food_id):
+    food = Food.query.get_or_404(food_id)
+    if 'owner_id' not in session or session['owner_id'] != food.owner_id:
+        flash('Not authorized to delete this food item.', 'danger')
+        return redirect(url_for('owner_foods'))
+    for i in range(1,6):
+        img = getattr(food, f'image{i}')
+        if img:
+            _delete_static_file(img)
+    db.session.delete(food)
+    db.session.commit()
+    flash('Food deleted.', 'info')
+    return redirect(url_for('owner_foods'))
 
 
 @app.route('/owner/cottages/edit/<int:cottage_id>', methods=['POST'])

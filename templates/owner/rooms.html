@@ -309,7 +309,7 @@
                 <svg viewBox="0 0 24 24" width="20px" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 12l9-7 9 7v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7z" stroke="#000" stroke-width="2"/><path d="M9 21V9h6v12" stroke="#000" stroke-width="2"/></svg>
                 <p>Cottages</p>
             </a>
-            <a href="#">
+            <a href="{{ url_for('owner_foods') }}">
                 <!-- Foods icon -->
                 <svg viewBox="0 0 24 24" width="20px" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6h16M4 10h16M7 14h10M9 18h6" stroke="#000" stroke-width="2"/><circle cx="12" cy="20" r="1" fill="#000"/></svg>
                 <p>Foods</p>
@@ -332,7 +332,7 @@
             <div class="rooms-list" style="width:100%;">
                 {% if rooms and rooms|length > 0 %}
                     {% for room in rooms %}
-                    <div class="room-card" data-room='{{ {'id': room.id, 'name': room.name, 'price': room.price, 'capacity': room.capacity, 'beds': room.beds, 'other_feature2': room.other_feature2, 'other_feature3': room.other_feature3, 'other_feature5': room.other_feature5, 'image1': room.image1, 'image2': room.image2, 'image3': room.image3, 'image4': room.image4, 'image5': room.image5 }|tojson }}' style="display:flex;align-items:center;justify-content:space-between;background:#f5faff;border-radius:10px;padding:18px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(33,147,176,0.08);">
+                    <div class="room-card" data-room='{{ {'id': room.id|default(0), 'name': room.name|default(''), 'price': room.price|default(''), 'capacity': room.capacity|default(''), 'beds': room.beds|default(''), 'other_feature2': room.other_feature2|default(''), 'other_feature3': room.other_feature3|default(''), 'other_feature5': room.other_feature5|default(''), 'image1': room.image1|default(''), 'image2': room.image2|default(''), 'image3': room.image3|default(''), 'image4': room.image4|default(''), 'image5': room.image5|default('') }|tojson }}' style="display:flex;align-items:center;justify-content:space-between;background:#f5faff;border-radius:10px;padding:18px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(33,147,176,0.08);">
                         <div style="display:flex;align-items:center;gap:18px;">
                             {% set thumb = room.image1 or room.image2 or room.image3 or room.image4 or room.image5 %}
                             <img src="/static/{{ thumb if thumb else 'images/bg.webp' }}" alt="Room Image" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #2193b0;">

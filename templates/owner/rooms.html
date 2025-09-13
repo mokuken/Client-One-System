@@ -330,46 +330,28 @@
                 <button class="modern-button" style="float:right; margin-left:auto;" id="addRoomBtn">+ Add Room</button>
             </div>
             <div class="rooms-list" style="width:100%;">
-                <!-- Static room list -->
-                <div class="room-card" style="display:flex;align-items:center;justify-content:space-between;background:#f5faff;border-radius:10px;padding:18px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(33,147,176,0.08);">
-                    <div style="display:flex;align-items:center;gap:18px;">
-                        <img src="/static/images/bg.webp" alt="Room Image" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #2193b0;">
-                        <div>
-                            <div style="font-size:1.2rem;font-weight:bold;color:#2193b0;">Deluxe Room</div>
-                            <div style="color:#555;font-size:0.98rem;">2 beds, Aircon, Pool View</div>
+                {% if rooms and rooms|length > 0 %}
+                    {% for room in rooms %}
+                    <div class="room-card" data-room='{{ {'id': room.id, 'name': room.name, 'price': room.price, 'capacity': room.capacity, 'beds': room.beds, 'other_feature2': room.other_feature2, 'other_feature3': room.other_feature3, 'other_feature5': room.other_feature5, 'image1': room.image1, 'image2': room.image2, 'image3': room.image3, 'image4': room.image4, 'image5': room.image5 }|tojson }}' style="display:flex;align-items:center;justify-content:space-between;background:#f5faff;border-radius:10px;padding:18px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(33,147,176,0.08);">
+                        <div style="display:flex;align-items:center;gap:18px;">
+                            {% set thumb = room.image1 or room.image2 or room.image3 or room.image4 or room.image5 %}
+                            <img src="/static/{{ thumb if thumb else 'images/bg.webp' }}" alt="Room Image" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #2193b0;">
+                            <div>
+                                <div style="font-size:1.2rem;font-weight:bold;color:#2193b0;">{{ room.name }}</div>
+                                <div style="color:#555;font-size:0.98rem;">{{ room.beds or '' }} beds · {{ room.capacity or '' }} · {{ room.other_feature2 or '' }}</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:10px;">
+                            <button class="modern-button edit-room-btn" data-room-id="{{ room.id }}" style="background:linear-gradient(90deg,#6dd5ed 0%,#2193b0 100%);padding:0.4rem 1.2rem;font-size:0.95rem;">Edit</button>
+                            <form method="post" action="{{ url_for('delete_room', room_id=room.id) }}" style="display:inline;">
+                                <button type="submit" class="modern-button" style="background:linear-gradient(90deg,#ff6a6a 0%,#ffb86b 100%);padding:0.4rem 1.2rem;font-size:0.95rem;">Delete</button>
+                            </form>
                         </div>
                     </div>
-                    <div style="display:flex;gap:10px;">
-                        <button class="modern-button" style="background:linear-gradient(90deg,#6dd5ed 0%,#2193b0 100%);padding:0.4rem 1.2rem;font-size:0.95rem;">Edit</button>
-                        <button class="modern-button" style="background:linear-gradient(90deg,#ff6a6a 0%,#ffb86b 100%);padding:0.4rem 1.2rem;font-size:0.95rem;">Delete</button>
-                    </div>
-                </div>
-                <div class="room-card" style="display:flex;align-items:center;justify-content:space-between;background:#f5faff;border-radius:10px;padding:18px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(33,147,176,0.08);">
-                    <div style="display:flex;align-items:center;gap:18px;">
-                        <img src="/static/images/bg.webp" alt="Room Image" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #2193b0;">
-                        <div>
-                            <div style="font-size:1.2rem;font-weight:bold;color:#2193b0;">Family Suite</div>
-                            <div style="color:#555;font-size:0.98rem;">4 beds, Kitchen, Garden View</div>
-                        </div>
-                    </div>
-                    <div style="display:flex;gap:10px;">
-                        <button class="modern-button" style="background:linear-gradient(90deg,#6dd5ed 0%,#2193b0 100%);padding:0.4rem 1.2rem;font-size:0.95rem;">Edit</button>
-                        <button class="modern-button" style="background:linear-gradient(90deg,#ff6a6a 0%,#ffb86b 100%);padding:0.4rem 1.2rem;font-size:0.95rem;">Delete</button>
-                    </div>
-                </div>
-                <div class="room-card" style="display:flex;align-items:center;justify-content:space-between;background:#f5faff;border-radius:10px;padding:18px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(33,147,176,0.08);">
-                    <div style="display:flex;align-items:center;gap:18px;">
-                        <img src="/static/images/bg.webp" alt="Room Image" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #2193b0;">
-                        <div>
-                            <div style="font-size:1.2rem;font-weight:bold;color:#2193b0;">Single Room</div>
-                            <div style="color:#555;font-size:0.98rem;">1 bed, Fan, Mountain View</div>
-                        </div>
-                    </div>
-                    <div style="display:flex;gap:10px;">
-                        <button class="modern-button" style="background:linear-gradient(90deg,#6dd5ed 0%,#2193b0 100%);padding:0.4rem 1.2rem;font-size:0.95rem;">Edit</button>
-                        <button class="modern-button" style="background:linear-gradient(90deg,#ff6a6a 0%,#ffb86b 100%);padding:0.4rem 1.2rem;font-size:0.95rem;">Delete</button>
-                    </div>
-                </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="color:#666;padding:18px 8px;">No rooms found. Add one using the + Add Room button.</div>
+                {% endif %}
             </div>
     </div>
     </div>
@@ -381,26 +363,26 @@
             <div class="modal-title" id="addRoomTitle">Add Room</div>
             <button class="modal-close" id="modalCloseBtn" aria-label="Close">×</button>
         </div>
-        <form id="addRoomForm">
+    <form id="addRoomForm" method="post" enctype="multipart/form-data" action="{{ url_for('owner_rooms') }}">
             <div class="photo-row">
                 <label class="upload-box">
-                    <input type="file" accept="image/*" class="upload-input" data-preview-target>
+            <input type="file" name="image1" accept="image/*" class="upload-input" data-preview-target>
                     <small>Upload Photo</small>
                 </label>
                 <label class="upload-box hidden">
-                    <input type="file" accept="image/*" class="upload-input" data-preview-target>
+            <input type="file" name="image2" accept="image/*" class="upload-input" data-preview-target>
                     <small>Upload Photo</small>
                 </label>
                 <label class="upload-box hidden">
-                    <input type="file" accept="image/*" class="upload-input" data-preview-target>
+            <input type="file" name="image3" accept="image/*" class="upload-input" data-preview-target>
                     <small>Upload Photo</small>
                 </label>
                 <label class="upload-box hidden">
-                    <input type="file" accept="image/*" class="upload-input" data-preview-target>
+            <input type="file" name="image4" accept="image/*" class="upload-input" data-preview-target>
                     <small>Upload Photo</small>
                 </label>
                 <label class="upload-box hidden">
-                    <input type="file" accept="image/*" class="upload-input" data-preview-target>
+                    <input type="file" name="image5" accept="image/*" class="upload-input" data-preview-target>
                     <small>Upload Photo</small>
                 </label>
             </div>
@@ -416,7 +398,7 @@
             </div>
 
             <div class="done-row">
-                <button type="button" class="modal-done" id="modalDoneBtn">Done</button>
+                <button type="submit" class="modal-done" id="modalDoneBtn">Save</button>
             </div>
         </form>
     </div>
@@ -497,3 +479,148 @@
     })();
 </script>
 </html>
+<!-- Edit Room Modal -->
+<div id="editRoomModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="editRoomTitle">
+        <div class="modal-header">
+            <div class="modal-title" id="editRoomTitle">Edit Room</div>
+            <button class="modal-close" id="editModalCloseBtn" aria-label="Close">×</button>
+        </div>
+        <form id="editRoomForm" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="_method" value="post">
+            <div class="photo-row" id="editPhotoRow">
+                {% for i in range(1,6) %}
+                <label class="upload-box" data-index="{{ i }}">
+                    <input type="file" name="image{{ i }}" accept="image/*" class="upload-input" data-preview-target>
+                    <small>Upload Photo</small>
+                    <button type="button" class="remove-image-x" aria-label="Remove image" style="position:absolute;right:6px;top:6px;display:none;background:rgba(0,0,0,0.45);color:#fff;border:none;border-radius:12px;width:22px;height:22px;align-items:center;justify-content:center;cursor:pointer;">×</button>
+                    <input type="hidden" name="delete_image{{ i }}" value="0">
+                </label>
+                {% endfor %}
+            </div>
+            <div class="pill-grid">
+                <div class="pill"><input name="room_name" placeholder="Room: Name/Number"/></div>
+                <div class="pill right"><input name="other_feature2" placeholder="Other feature ..."/></div>
+                <div class="pill"><input name="price" placeholder="Price"/></div>
+                <div class="pill right"><input name="other_feature3" placeholder="Other feature ..."/></div>
+                <div class="pill"><input name="capacity" placeholder="number of person can accommodate"/></div>
+                <div class="pill right"><input name="other_feature5" placeholder="Other feature ..."/></div>
+                <div class="pill"><input name="beds" placeholder="number of bed"/></div>
+            </div>
+
+            <div class="done-row">
+                <button type="submit" class="modal-done">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function(){
+        // edit modal logic
+        const editModal = document.getElementById('editRoomModal');
+        const editForm = document.getElementById('editRoomForm');
+        const editClose = document.getElementById('editModalCloseBtn');
+
+        function openEditModal(room){
+            // set form action
+            editForm.action = '/owner/rooms/edit/' + room.id;
+            // populate fields
+            editForm.room_name.value = room.name || '';
+            editForm.price.value = room.price || '';
+            editForm.capacity.value = room.capacity || '';
+            editForm.beds.value = room.beds || '';
+            editForm.other_feature2.value = room.other_feature2 || '';
+            editForm.other_feature3.value = room.other_feature3 || '';
+            editForm.other_feature5.value = room.other_feature5 || '';
+
+            // populate previews: remove existing imgs then add if available
+            const inputs = Array.from(editForm.querySelectorAll('.upload-input'));
+            inputs.forEach((input, idx)=>{
+                const label = input.closest('.upload-box');
+                const existingImg = label.querySelector('img');
+                if(existingImg) existingImg.remove();
+                // reset delete flag
+                const del = label.querySelector('input[type="hidden"][name="delete_image'+(idx+1)+'"]');
+                if(del) del.value = '0';
+                const path = room['image'+(idx+1)];
+                if(path){
+                    const img = document.createElement('img');
+                    img.src = '/static/' + path;
+                    label.insertBefore(img, label.firstChild);
+                    if(label.querySelector('small')) label.querySelector('small').remove();
+                    label.classList.add('has-image');
+                    // show X button
+                    const x = label.querySelector('.remove-image-x');
+                    if(x) x.style.display = 'flex';
+                } else {
+                    const x = label.querySelector('.remove-image-x');
+                    if(x) x.style.display = 'none';
+                }
+            });
+
+            // attach X button handlers and input change handlers
+            Array.from(editForm.querySelectorAll('.remove-image-x')).forEach((btn)=>{
+                btn.addEventListener('click', (e)=>{
+                    const label = btn.closest('.upload-box');
+                    // set hidden delete flag
+                    const idx = label.getAttribute('data-index');
+                    const del = label.querySelector('input[type="hidden"][name="delete_image'+idx+'"]');
+                    if(del) del.value = '1';
+                    // remove preview img if any
+                    const img = label.querySelector('img');
+                    if(img) img.remove();
+                    // show the small placeholder again
+                    if(!label.querySelector('small')){
+                        const s = document.createElement('small'); s.textContent = 'Upload Photo'; label.appendChild(s);
+                    }
+                    btn.style.display = 'none';
+                });
+            });
+
+            inputs.forEach((input, idx)=>{
+                input.addEventListener('change', (ev)=>{
+                    const file = ev.target.files && ev.target.files[0];
+                    const label = ev.target.closest('.upload-box');
+                    const small = label.querySelector('small');
+                    if(file){
+                        // reset delete flag since user chose a new file
+                        const del = label.querySelector('input[type="hidden"][name="delete_image'+(idx+1)+'"]');
+                        if(del) del.value = '0';
+                        const reader = new FileReader();
+                        reader.onload = function(e){
+                            const existing = label.querySelector('img'); if(existing) existing.remove();
+                            const img = document.createElement('img'); img.src = e.target.result; label.insertBefore(img, label.firstChild);
+                            if(small) small.remove();
+                            label.classList.add('has-image');
+                            const x = label.querySelector('.remove-image-x'); if(x) x.style.display='flex';
+                        }
+                        reader.readAsDataURL(file);
+                    }
+                });
+            });
+
+            editModal.classList.add('show');
+            editModal.setAttribute('aria-hidden','false');
+        }
+
+        function closeEditModal(){
+            editModal.classList.remove('show');
+            editModal.setAttribute('aria-hidden','true');
+        }
+
+        document.querySelectorAll('.edit-room-btn').forEach(btn=>{
+            btn.addEventListener('click', ()=>{
+                const id = btn.getAttribute('data-room-id');
+                // fetch room data from DOM elements to avoid extra request; we embed dataset below
+                const row = btn.closest('.room-card');
+                const room = JSON.parse(row.getAttribute('data-room'));
+                openEditModal(room);
+            });
+        });
+
+        editClose && editClose.addEventListener('click', closeEditModal);
+        editModal && editModal.addEventListener('click', (e)=>{ if(e.target===editModal) closeEditModal(); });
+
+    })();
+</script>

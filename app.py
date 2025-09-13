@@ -1,10 +1,19 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+import os
+import uuid
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+# file upload settings
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 db = SQLAlchemy(app)
 
 class User(db.Model):
@@ -45,6 +54,44 @@ class Owner(db.Model):
     paymaya = db.Column(db.String(120))
     paypal = db.Column(db.String(120))
     # Add other fields as needed
+
+
+class Room(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=True)
+    name = db.Column(db.String(200), nullable=False)
+    price = db.Column(db.String(50))
+    capacity = db.Column(db.String(20))
+    beds = db.Column(db.String(20))
+    other_feature2 = db.Column(db.String(200))
+    other_feature3 = db.Column(db.String(200))
+    other_feature5 = db.Column(db.String(200))
+    image1 = db.Column(db.String(300))
+    image2 = db.Column(db.String(300))
+    image3 = db.Column(db.String(300))
+    image4 = db.Column(db.String(300))
+    image5 = db.Column(db.String(300))
+
+    owner = db.relationship('Owner', backref=db.backref('rooms', lazy=True))
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def _delete_static_file(rel_path):
+    """Delete a file stored under the static folder given a relative path like 'uploads/xxx.jpg'."""
+    if not rel_path:
+        return
+    # prevent directory traversal
+    rel_path = rel_path.replace('..', '')
+    abs_path = os.path.join(BASE_DIR, 'static', rel_path)
+    try:
+        if os.path.exists(abs_path) and os.path.isfile(abs_path):
+            os.remove(abs_path)
+    except Exception:
+        # don't raise; best-effort cleanup
+        pass
 
 @app.route("/")
 def home():
@@ -143,9 +190,126 @@ def owner_dashboard():
 def owner_reservations():
     return render_template("owner/reservations.html")
 
-@app.route("/owner/rooms")
+@app.route("/owner/rooms", methods=["GET","POST"]) 
 def owner_rooms():
-    return render_template("owner/rooms.html")
+    # Support GET: list rooms for current owner (if logged in) or all rooms
+    if request.method == 'POST':
+        # handle room creation with up to 5 images
+        if 'owner_id' not in session:
+            flash('You must be logged in as owner to add rooms.', 'danger')
+            return redirect(url_for('owner_rooms'))
+        owner_id = session['owner_id']
+        room_name = request.form.get('room_name') or 'Untitled Room'
+        price = request.form.get('price')
+        capacity = request.form.get('capacity')
+        beds = request.form.get('beds')
+        other_feature2 = request.form.get('other_feature2')
+        other_feature3 = request.form.get('other_feature3')
+        other_feature5 = request.form.get('other_feature5')
+
+        # prepare filenames
+        filenames = [None] * 5
+        for i in range(1,6):
+            file = request.files.get(f'image{i}')
+            if file and file.filename and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                # ensure unique filename using uuid4
+                name, ext = os.path.splitext(filename)
+                uniq = f"{name}_{owner_id}_{uuid.uuid4().hex}_{i}{ext}"
+                save_path = os.path.join(app.config['UPLOAD_FOLDER'], uniq)
+                file.save(save_path)
+                # store path relative to static for use in templates
+                filenames[i-1] = os.path.join('uploads', uniq).replace('\\','/')
+
+        room = Room(
+            owner_id=owner_id,
+            name=room_name,
+            price=price,
+            capacity=capacity,
+            beds=beds,
+            other_feature2=other_feature2,
+            other_feature3=other_feature3,
+            other_feature5=other_feature5,
+            image1=filenames[0],
+            image2=filenames[1],
+            image3=filenames[2],
+            image4=filenames[3],
+            image5=filenames[4]
+        )
+        db.session.add(room)
+        db.session.commit()
+        flash('Room added successfully.', 'success')
+        return redirect(url_for('owner_rooms'))
+
+    # GET
+    rooms = []
+    if 'owner_id' in session:
+        rooms = Room.query.filter_by(owner_id=session['owner_id']).all()
+    else:
+        rooms = Room.query.all()
+    return render_template('owner/rooms.html', rooms=rooms)
+
+
+@app.route('/owner/rooms/edit/<int:room_id>', methods=['POST'])
+def edit_room(room_id):
+    room = Room.query.get_or_404(room_id)
+    if 'owner_id' not in session or session['owner_id'] != room.owner_id:
+        flash('Not authorized to edit this room.', 'danger')
+        return redirect(url_for('owner_rooms'))
+
+    room.name = request.form.get('room_name') or room.name
+    room.price = request.form.get('price') or room.price
+    room.capacity = request.form.get('capacity') or room.capacity
+    room.beds = request.form.get('beds') or room.beds
+    room.other_feature2 = request.form.get('other_feature2') or room.other_feature2
+    room.other_feature3 = request.form.get('other_feature3') or room.other_feature3
+    room.other_feature5 = request.form.get('other_feature5') or room.other_feature5
+
+    # handle delete flags first (user removed image in modal)
+    for i in range(1,6):
+        if request.form.get(f'delete_image{i}') == '1':
+            old = getattr(room, f'image{i}')
+            if old:
+                _delete_static_file(old)
+            setattr(room, f'image{i}', None)
+
+    # handle optional replacement images
+    for i in range(1,6):
+        file = request.files.get(f'image{i}')
+        if file and file.filename and allowed_file(file.filename):
+            # delete old (if any) to replace
+            old = getattr(room, f'image{i}')
+            if old:
+                _delete_static_file(old)
+            filename = secure_filename(file.filename)
+            name, ext = os.path.splitext(filename)
+            uniq = f"{name}_{room.owner_id}_{uuid.uuid4().hex}_{i}{ext}"
+            save_path = os.path.join(app.config['UPLOAD_FOLDER'], uniq)
+            file.save(save_path)
+            setattr(room, f'image{i}', os.path.join('uploads', uniq).replace('\\','/'))
+
+    db.session.commit()
+    flash('Room updated.', 'success')
+    return redirect(url_for('owner_rooms'))
+
+
+@app.route('/owner/rooms/delete/<int:room_id>', methods=['POST'])
+def delete_room(room_id):
+    room = Room.query.get_or_404(room_id)
+    if 'owner_id' not in session or session['owner_id'] != room.owner_id:
+        flash('Not authorized to delete this room.', 'danger')
+        return redirect(url_for('owner_rooms'))
+
+    # delete image files
+    for i in range(1,6):
+        img = getattr(room, f'image{i}')
+        if img:
+            _delete_static_file(img)
+
+    db.session.delete(room)
+    db.session.commit()
+    flash('Room deleted.', 'info')
+    return redirect(url_for('owner_rooms'))
 
 @app.route("/owner/cottages")
 def owner_cottages():

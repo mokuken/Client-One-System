@@ -204,6 +204,73 @@
             font-size: 0.97rem;
             word-break: break-word;
         }
+        /* Modal styles (kept in same design language) */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 22, 31, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1200;
+            padding: 28px;
+        }
+        .modal-backdrop.show {
+            display: flex;
+        }
+        .modal-panel {
+            width: 100%;
+            max-width: 980px;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            padding: 22px 20px;
+            overflow: auto;
+            max-height: 90vh;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+        .modal-header {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+            margin-bottom:16px;
+        }
+        .modal-title { font-size:1.25rem; font-weight:700; color:#2193b0; }
+        .modal-close { background:transparent; border:none; font-size:1.2rem; cursor:pointer; color:#666 }
+
+        /* photo row */
+        .photo-row { display:flex; gap:12px; margin-bottom:18px; }
+        .upload-box {
+            width:96px;
+            height:76px;
+            border-radius:8px;
+            background:#f5f5f6;
+            border:2px dashed #ddd;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#888;
+            cursor:pointer;
+            overflow:hidden;
+            position:relative;
+        }
+        .upload-box img { width:100%; height:100%; object-fit:cover; display:block; }
+        .upload-box small { font-size:0.82rem; }
+        .upload-input { display:none; }
+    .upload-box.hidden { display:none; }
+    .upload-box.has-image { border-style:solid; border-color: rgba(33,147,176,0.12); }
+
+        /* pill inputs layout */
+        .pill-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 18px; }
+    .pill-grid .pill.right { grid-column: 2; }
+        .pill { background:#fff; border-radius:999px; padding:12px 16px; border:1px solid #eef2f6; box-shadow:0 2px 8px rgba(33,147,176,0.05); color:#666; }
+        .pill input, .pill textarea { border:none; outline:none; width:100%; background:transparent; font-size:0.95rem; color:#333; }
+        .pill textarea { resize:vertical; }
+
+        .features-list { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+        .done-row { display:flex; justify-content:flex-end; margin-top:16px; }
+        .modal-done { background:linear-gradient(90deg,#2193b0 0%,#6dd5ed 100%); color:#fff; padding:10px 22px; border-radius:28px; border:none; font-weight:700; cursor:pointer; }
     </style>
 </head>
 <body>
@@ -307,4 +374,126 @@
     </div>
     </div>
 </body>
+<!-- Add Room Modal -->
+<div id="addRoomModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="addRoomTitle">
+        <div class="modal-header">
+            <div class="modal-title" id="addRoomTitle">Add Room</div>
+            <button class="modal-close" id="modalCloseBtn" aria-label="Close">×</button>
+        </div>
+        <form id="addRoomForm">
+            <div class="photo-row">
+                <label class="upload-box">
+                    <input type="file" accept="image/*" class="upload-input" data-preview-target>
+                    <small>Upload Photo</small>
+                </label>
+                <label class="upload-box hidden">
+                    <input type="file" accept="image/*" class="upload-input" data-preview-target>
+                    <small>Upload Photo</small>
+                </label>
+                <label class="upload-box hidden">
+                    <input type="file" accept="image/*" class="upload-input" data-preview-target>
+                    <small>Upload Photo</small>
+                </label>
+                <label class="upload-box hidden">
+                    <input type="file" accept="image/*" class="upload-input" data-preview-target>
+                    <small>Upload Photo</small>
+                </label>
+                <label class="upload-box hidden">
+                    <input type="file" accept="image/*" class="upload-input" data-preview-target>
+                    <small>Upload Photo</small>
+                </label>
+            </div>
+
+            <div class="pill-grid">
+                <div class="pill"><input name="room_name" placeholder="Room: Name/Number"/></div>
+                <div class="pill right"><input name="other_feature2" placeholder="Other feature ..."/></div>
+                <div class="pill"><input name="price" placeholder="Price"/></div>
+                <div class="pill right"><input name="other_feature3" placeholder="Other feature ..."/></div>
+                <div class="pill"><input name="capacity" placeholder="number of person can accommodate"/></div>
+                <div class="pill right"><input name="other_feature5" placeholder="Other feature ..."/></div>
+                <div class="pill"><input name="beds" placeholder="number of bed"/></div>
+            </div>
+
+            <div class="done-row">
+                <button type="button" class="modal-done" id="modalDoneBtn">Done</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function(){
+        const addRoomBtn = document.getElementById('addRoomBtn');
+        const modal = document.getElementById('addRoomModal');
+        const closeBtn = document.getElementById('modalCloseBtn');
+        const doneBtn = document.getElementById('modalDoneBtn');
+
+        function openModal(){
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden','false');
+            // focus the first input for keyboard users
+            setTimeout(()=>{
+                const first = modal.querySelector('input, textarea');
+                if(first) first.focus();
+            },50);
+        }
+        function closeModal(){
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden','true');
+        }
+
+        addRoomBtn && addRoomBtn.addEventListener('click', openModal);
+        closeBtn && closeBtn.addEventListener('click', closeModal);
+        doneBtn && doneBtn.addEventListener('click', ()=>{
+            // basic UI behavior: close modal. Hook form submit here later.
+            closeModal();
+        });
+
+        // close on backdrop click
+        modal.addEventListener('click', (e)=>{
+            if(e.target === modal) closeModal();
+        });
+
+        // close on ESC
+        document.addEventListener('keydown', (e)=>{
+            if(e.key === 'Escape' && modal.classList.contains('show')) closeModal();
+        });
+
+        // image preview handling and reveal next uploader
+        const inputs = Array.from(document.querySelectorAll('.upload-input'));
+        inputs.forEach((input, idx) => {
+            input.addEventListener('change', (ev)=>{
+                const file = ev.target.files && ev.target.files[0];
+                const label = ev.target.closest('.upload-box');
+                if(!file || !label) return;
+                const reader = new FileReader();
+                reader.onload = function(e){
+                    // keep the input element so user can change file later
+                    // remove only the small placeholder text
+                    const small = label.querySelector('small');
+                    if(small) small.remove();
+                    // if an img already exists, update src, else create it
+                    let img = label.querySelector('img');
+                    if(!img){
+                        img = document.createElement('img');
+                        // insert img before input so input remains in DOM
+                        label.insertBefore(img, label.firstChild);
+                    }
+                    img.src = e.target.result;
+                    label.classList.add('has-image');
+                    // reveal next uploader if exists and is hidden
+                    const next = inputs[idx+1];
+                    if(next){
+                        const nextLabel = next.closest('.upload-box');
+                        if(nextLabel && nextLabel.classList.contains('hidden')){
+                            nextLabel.classList.remove('hidden');
+                        }
+                    }
+                }
+                reader.readAsDataURL(file);
+            });
+        });
+    })();
+</script>
 </html>

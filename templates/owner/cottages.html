@@ -204,6 +204,73 @@
             font-size: 0.97rem;
             word-break: break-word;
         }
+        /* Modal styles (kept in same design language) */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 22, 31, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1200;
+            padding: 28px;
+        }
+        .modal-backdrop.show {
+            display: flex;
+        }
+        .modal-panel {
+            width: 100%;
+            max-width: 980px;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            padding: 22px 20px;
+            overflow: auto;
+            max-height: 90vh;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+        .modal-header {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+            margin-bottom:16px;
+        }
+        .modal-title { font-size:1.25rem; font-weight:700; color:#2193b0; }
+        .modal-close { background:transparent; border:none; font-size:1.2rem; cursor:pointer; color:#666 }
+
+        /* photo row */
+        .photo-row { display:flex; gap:12px; margin-bottom:18px; }
+        .upload-box {
+            width:96px;
+            height:76px;
+            border-radius:8px;
+            background:#f5f5f6;
+            border:2px dashed #ddd;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#888;
+            cursor:pointer;
+            overflow:hidden;
+            position:relative;
+        }
+        .upload-box img { width:100%; height:100%; object-fit:cover; display:block; }
+        .upload-box small { font-size:0.82rem; }
+        .upload-input { display:none; }
+    .upload-box.hidden { display:none; }
+    .upload-box.has-image { border-style:solid; border-color: rgba(33,147,176,0.12); }
+
+        /* pill inputs layout */
+        .pill-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 18px; }
+    .pill-grid .pill.right { grid-column: 2; }
+        .pill { background:#fff; border-radius:999px; padding:12px 16px; border:1px solid #eef2f6; box-shadow:0 2px 8px rgba(33,147,176,0.05); color:#666; }
+        .pill input, .pill textarea { border:none; outline:none; width:100%; background:transparent; font-size:0.95rem; color:#333; }
+        .pill textarea { resize:vertical; }
+
+        .features-list { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+        .done-row { display:flex; justify-content:flex-end; margin-top:16px; }
+        .modal-done { background:linear-gradient(90deg,#2193b0 0%,#6dd5ed 100%); color:#fff; padding:10px 22px; border-radius:28px; border:none; font-weight:700; cursor:pointer; }
     </style>
 </head>
 <body>
@@ -263,48 +330,212 @@
                 <button class="modern-button" style="float:right; margin-left:auto;" id="addCottageBtn">+ Add Cottage</button>
             </div>
             <div class="cottages-list" style="width:100%;">
-                <!-- Static cottage list -->
-                <div class="cottage-card" style="display:flex;align-items:center;justify-content:space-between;background:#f5faff;border-radius:10px;padding:18px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(33,147,176,0.08);">
-                    <div style="display:flex;align-items:center;gap:18px;">
-                        <img src="/static/images/bg.webp" alt="Cottage Image" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #2193b0;">
-                        <div>
-                            <div style="font-size:1.2rem;font-weight:bold;color:#2193b0;">Bamboo Cottage</div>
-                            <div style="color:#555;font-size:0.98rem;">6 pax, Native Style, Near Pool</div>
+                {% if cottages and cottages|length > 0 %}
+                    {% for cottage in cottages %}
+                    <div class="cottage-card" data-cottage='{{ {'id': cottage.id, 'name': cottage.name, 'price': cottage.price, 'capacity': cottage.capacity, 'other_feature2': cottage.other_feature2, 'other_feature3': cottage.other_feature3, 'other_feature5': cottage.other_feature5, 'image1': cottage.image1, 'image2': cottage.image2, 'image3': cottage.image3, 'image4': cottage.image4, 'image5': cottage.image5 }|tojson }}' style="display:flex;align-items:center;justify-content:space-between;background:#f5faff;border-radius:10px;padding:18px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(33,147,176,0.08);">
+                        <div style="display:flex;align-items:center;gap:18px;">
+                            {% set thumb = cottage.image1 or cottage.image2 or cottage.image3 or cottage.image4 or cottage.image5 %}
+                            <img src="/static/{{ thumb if thumb else 'images/bg.webp' }}" alt="Cottage Image" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #2193b0;">
+                            <div>
+                                <div style="font-size:1.2rem;font-weight:bold;color:#2193b0;">{{ cottage.name }}</div>
+                                <div style="color:#555;font-size:0.98rem;">{{ cottage.capacity or '' }} pax · {{ cottage.other_feature2 or '' }} · {{ cottage.other_feature3 or '' }}</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:10px;">
+                            <button class="modern-button edit-cottage-btn" data-cottage-id="{{ cottage.id }}" style="background:linear-gradient(90deg,#6dd5ed 0%,#2193b0 100%);padding:0.4rem 1.2rem;font-size:0.95rem;">Edit</button>
+                            <form method="post" action="{{ url_for('delete_cottage', cottage_id=cottage.id) }}" style="display:inline;">
+                                <button type="submit" class="modern-button" style="background:linear-gradient(90deg,#ff6a6a 0%,#ffb86b 100%);padding:0.4rem 1.2rem;font-size:0.95rem;">Delete</button>
+                            </form>
                         </div>
                     </div>
-                    <div style="display:flex;gap:10px;">
-                        <button class="modern-button" style="background:linear-gradient(90deg,#6dd5ed 0%,#2193b0 100%);padding:0.4rem 1.2rem;font-size:0.95rem;">Edit</button>
-                        <button class="modern-button" style="background:linear-gradient(90deg,#ff6a6a 0%,#ffb86b 100%);padding:0.4rem 1.2rem;font-size:0.95rem;">Delete</button>
-                    </div>
-                </div>
-                <div class="cottage-card" style="display:flex;align-items:center;justify-content:space-between;background:#f5faff;border-radius:10px;padding:18px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(33,147,176,0.08);">
-                    <div style="display:flex;align-items:center;gap:18px;">
-                        <img src="/static/images/bg.webp" alt="Cottage Image" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #2193b0;">
-                        <div>
-                            <div style="font-size:1.2rem;font-weight:bold;color:#2193b0;">Family Cottage</div>
-                            <div style="color:#555;font-size:0.98rem;">12 pax, Kitchen, Garden View</div>
-                        </div>
-                    </div>
-                    <div style="display:flex;gap:10px;">
-                        <button class="modern-button" style="background:linear-gradient(90deg,#6dd5ed 0%,#2193b0 100%);padding:0.4rem 1.2rem;font-size:0.95rem;">Edit</button>
-                        <button class="modern-button" style="background:linear-gradient(90deg,#ff6a6a 0%,#ffb86b 100%);padding:0.4rem 1.2rem;font-size:0.95rem;">Delete</button>
-                    </div>
-                </div>
-                <div class="cottage-card" style="display:flex;align-items:center;justify-content:space-between;background:#f5faff;border-radius:10px;padding:18px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(33,147,176,0.08);">
-                    <div style="display:flex;align-items:center;gap:18px;">
-                        <img src="/static/images/bg.webp" alt="Cottage Image" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #2193b0;">
-                        <div>
-                            <div style="font-size:1.2rem;font-weight:bold;color:#2193b0;">Small Cottage</div>
-                            <div style="color:#555;font-size:0.98rem;">4 pax, Open Air, Mountain View</div>
-                        </div>
-                    </div>
-                    <div style="display:flex;gap:10px;">
-                        <button class="modern-button" style="background:linear-gradient(90deg,#6dd5ed 0%,#2193b0 100%);padding:0.4rem 1.2rem;font-size:0.95rem;">Edit</button>
-                        <button class="modern-button" style="background:linear-gradient(90deg,#ff6a6a 0%,#ffb86b 100%);padding:0.4rem 1.2rem;font-size:0.95rem;">Delete</button>
-                    </div>
-                </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="color:#666;padding:18px 8px;">No cottages found. Add one using the + Add Cottage button.</div>
+                {% endif %}
             </div>
     </div>
     </div>
 </body>
+<!-- Add Cottage Modal (same structure as rooms modal) -->
+<div id="addCottageModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="addCottageTitle">
+        <div class="modal-header">
+            <div class="modal-title" id="addCottageTitle">Add Cottage</div>
+            <button class="modal-close" id="addCottageModalClose" aria-label="Close">×</button>
+        </div>
+    <form id="addCottageForm" method="post" enctype="multipart/form-data" action="{{ url_for('owner_cottages') }}">
+            <div class="photo-row">
+                <label class="upload-box">
+            <input type="file" name="image1" accept="image/*" class="upload-input" data-preview-target>
+                    <small>Upload Photo</small>
+                </label>
+                <label class="upload-box hidden">
+            <input type="file" name="image2" accept="image/*" class="upload-input" data-preview-target>
+                    <small>Upload Photo</small>
+                </label>
+                <label class="upload-box hidden">
+            <input type="file" name="image3" accept="image/*" class="upload-input" data-preview-target>
+                    <small>Upload Photo</small>
+                </label>
+                <label class="upload-box hidden">
+            <input type="file" name="image4" accept="image/*" class="upload-input" data-preview-target>
+                    <small>Upload Photo</small>
+                </label>
+                <label class="upload-box hidden">
+                    <input type="file" name="image5" accept="image/*" class="upload-input" data-preview-target>
+                    <small>Upload Photo</small>
+                </label>
+            </div>
+
+            <div class="pill-grid">
+                <div class="pill"><input name="room_name" placeholder="Cottage: Name/Number"/></div>
+                <div class="pill right"><input name="other_feature2" placeholder="Other feature ..."/></div>
+                <div class="pill"><input name="price" placeholder="Price"/></div>
+                <div class="pill right"><input name="other_feature3" placeholder="Other feature ..."/></div>
+                <div class="pill"><input name="capacity" placeholder="number of person can accommodate"/></div>
+                <div class="pill right"><input name="other_feature5" placeholder="Other feature ..."/></div>
+            </div>
+
+            <div class="done-row">
+                <button type="submit" class="modal-done" id="addCottageSave">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Cottage Modal -->
+<div id="editCottageModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="editCottageTitle">
+        <div class="modal-header">
+            <div class="modal-title" id="editCottageTitle">Edit Cottage</div>
+            <button class="modal-close" id="editCottageModalClose" aria-label="Close">×</button>
+        </div>
+        <form id="editCottageForm" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="_method" value="post">
+            <div class="photo-row" id="editCottagePhotoRow">
+                {% for i in range(1,6) %}
+                <label class="upload-box" data-index="{{ i }}">
+                    <input type="file" name="image{{ i }}" accept="image/*" class="upload-input" data-preview-target>
+                    <small>Upload Photo</small>
+                    <button type="button" class="remove-image-x" aria-label="Remove image" style="position:absolute;right:6px;top:6px;display:none;background:rgba(0,0,0,0.45);color:#fff;border:none;border-radius:12px;width:22px;height:22px;align-items:center;justify-content:center;cursor:pointer;">×</button>
+                    <input type="hidden" name="delete_image{{ i }}" value="0">
+                </label>
+                {% endfor %}
+            </div>
+            <div class="pill-grid">
+                <div class="pill"><input name="room_name" placeholder="Cottage: Name/Number"/></div>
+                <div class="pill right"><input name="other_feature2" placeholder="Other feature ..."/></div>
+                <div class="pill"><input name="price" placeholder="Price"/></div>
+                <div class="pill right"><input name="other_feature3" placeholder="Other feature ..."/></div>
+                <div class="pill"><input name="capacity" placeholder="number of person can accommodate"/></div>
+                <div class="pill right"><input name="other_feature5" placeholder="Other feature ..."/></div>
+            </div>
+
+            <div class="done-row">
+                <button type="submit" class="modal-done">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function(){
+        // reuse the room modal behaviors for cottages
+        const addBtn = document.getElementById('addCottageBtn');
+        const addModal = document.getElementById('addCottageModal');
+        const addClose = document.getElementById('addCottageModalClose');
+        const addSave = document.getElementById('addCottageSave');
+
+        function openAdd(){ addModal.classList.add('show'); addModal.setAttribute('aria-hidden','false'); }
+        function closeAdd(){ addModal.classList.remove('show'); addModal.setAttribute('aria-hidden','true'); }
+        addBtn && addBtn.addEventListener('click', openAdd);
+        addClose && addClose.addEventListener('click', closeAdd);
+        addSave && addSave.addEventListener('click', ()=>{ closeAdd(); });
+        addModal && addModal.addEventListener('click', (e)=>{ if(e.target===addModal) closeAdd(); });
+
+        // image preview handling
+        const inputs = Array.from(document.querySelectorAll('#addCottageModal .upload-input'));
+        inputs.forEach((input, idx) => {
+            input.addEventListener('change', (ev)=>{
+                const file = ev.target.files && ev.target.files[0];
+                const label = ev.target.closest('.upload-box');
+                if(!file || !label) return;
+                const reader = new FileReader();
+                reader.onload = function(e){
+                    const small = label.querySelector('small'); if(small) small.remove();
+                    let img = label.querySelector('img'); if(!img){ img = document.createElement('img'); label.insertBefore(img, label.firstChild); }
+                    img.src = e.target.result;
+                    label.classList.add('has-image');
+                    const next = inputs[idx+1]; if(next){ const nextLabel = next.closest('.upload-box'); if(nextLabel && nextLabel.classList.contains('hidden')) nextLabel.classList.remove('hidden'); }
+                }
+                reader.readAsDataURL(file);
+            });
+        });
+
+        // edit modal logic
+        const editModal = document.getElementById('editCottageModal');
+        const editForm = document.getElementById('editCottageForm');
+        const editCloseBtn = document.getElementById('editCottageModalClose');
+
+        function openEdit(cottage){
+            editForm.action = '/owner/cottages/edit/' + cottage.id;
+            editForm.room_name.value = cottage.name || '';
+            editForm.price.value = cottage.price || '';
+            editForm.capacity.value = cottage.capacity || '';
+            editForm.other_feature2.value = cottage.other_feature2 || '';
+            editForm.other_feature3.value = cottage.other_feature3 || '';
+            editForm.other_feature5.value = cottage.other_feature5 || '';
+
+            const inputs = Array.from(editForm.querySelectorAll('.upload-input'));
+            inputs.forEach((input, idx)=>{
+                const label = input.closest('.upload-box');
+                const existingImg = label.querySelector('img'); if(existingImg) existingImg.remove();
+                const del = label.querySelector('input[type="hidden"][name="delete_image'+(idx+1)+'"]'); if(del) del.value='0';
+                const path = cottage['image'+(idx+1)];
+                if(path){ const img = document.createElement('img'); img.src = '/static/' + path; label.insertBefore(img, label.firstChild); if(label.querySelector('small')) label.querySelector('small').remove(); label.classList.add('has-image'); const x = label.querySelector('.remove-image-x'); if(x) x.style.display='flex'; }
+                else { const x = label.querySelector('.remove-image-x'); if(x) x.style.display='none'; }
+            });
+
+            Array.from(editForm.querySelectorAll('.remove-image-x')).forEach((btn)=>{
+                btn.addEventListener('click', (e)=>{
+                    const label = btn.closest('.upload-box');
+                    const idx = label.getAttribute('data-index');
+                    const del = label.querySelector('input[type="hidden"][name="delete_image'+idx+'"]'); if(del) del.value='1';
+                    const img = label.querySelector('img'); if(img) img.remove();
+                    if(!label.querySelector('small')){ const s = document.createElement('small'); s.textContent = 'Upload Photo'; label.appendChild(s); }
+                    btn.style.display = 'none';
+                });
+            });
+
+            inputs.forEach((input, idx)=>{
+                input.addEventListener('change', (ev)=>{
+                    const file = ev.target.files && ev.target.files[0];
+                    const label = ev.target.closest('.upload-box');
+                    const small = label.querySelector('small');
+                    if(file){
+                        const del = label.querySelector('input[type="hidden"][name="delete_image'+(idx+1)+'"]'); if(del) del.value='0';
+                        const reader = new FileReader();
+                        reader.onload = function(e){ const existing = label.querySelector('img'); if(existing) existing.remove(); const img = document.createElement('img'); img.src = e.target.result; label.insertBefore(img, label.firstChild); if(small) small.remove(); label.classList.add('has-image'); const x = label.querySelector('.remove-image-x'); if(x) x.style.display='flex'; }
+                        reader.readAsDataURL(file);
+                    }
+                });
+            });
+
+            editModal.classList.add('show'); editModal.setAttribute('aria-hidden','false');
+        }
+
+        function closeEdit(){ editModal.classList.remove('show'); editModal.setAttribute('aria-hidden','true'); }
+
+        document.querySelectorAll('.edit-cottage-btn').forEach(btn=>{
+            btn.addEventListener('click', ()=>{
+                const row = btn.closest('.cottage-card');
+                const cottage = JSON.parse(row.getAttribute('data-cottage'));
+                openEdit(cottage);
+            });
+        });
+        editCloseBtn && editCloseBtn.addEventListener('click', closeEdit);
+        editModal && editModal.addEventListener('click', (e)=>{ if(e.target===editModal) closeEdit(); });
+
+    })();
+</script>
 </html>

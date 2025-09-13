@@ -62,7 +62,6 @@ class Room(db.Model):
     name = db.Column(db.String(200), nullable=False)
     price = db.Column(db.String(50))
     capacity = db.Column(db.String(20))
-    beds = db.Column(db.String(20))
     other_feature2 = db.Column(db.String(200))
     other_feature3 = db.Column(db.String(200))
     other_feature5 = db.Column(db.String(200))
@@ -73,6 +72,25 @@ class Room(db.Model):
     image5 = db.Column(db.String(300))
 
     owner = db.relationship('Owner', backref=db.backref('rooms', lazy=True))
+
+
+class Cottage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=True)
+    name = db.Column(db.String(200), nullable=False)
+    price = db.Column(db.String(50))
+    capacity = db.Column(db.String(20))
+    beds = db.Column(db.String(20))
+    other_feature2 = db.Column(db.String(200))
+    other_feature3 = db.Column(db.String(200))
+    other_feature5 = db.Column(db.String(200))
+    image1 = db.Column(db.String(300))
+    image2 = db.Column(db.String(300))
+    image3 = db.Column(db.String(300))
+    image4 = db.Column(db.String(300))
+    image5 = db.Column(db.String(300))
+
+    owner = db.relationship('Owner', backref=db.backref('cottages', lazy=True))
 
 
 def allowed_file(filename):
@@ -226,7 +244,7 @@ def owner_rooms():
             name=room_name,
             price=price,
             capacity=capacity,
-            beds=beds,
+            # beds removed for cottages
             other_feature2=other_feature2,
             other_feature3=other_feature3,
             other_feature5=other_feature5,
@@ -311,9 +329,122 @@ def delete_room(room_id):
     flash('Room deleted.', 'info')
     return redirect(url_for('owner_rooms'))
 
-@app.route("/owner/cottages")
+@app.route("/owner/cottages", methods=["GET","POST"]) 
 def owner_cottages():
-    return render_template("owner/cottages.html")
+    # Support GET: list cottages for current owner (if logged in) or all cottages
+    if request.method == 'POST':
+        # handle cottage creation with up to 5 images
+        if 'owner_id' not in session:
+            flash('You must be logged in as owner to add cottages.', 'danger')
+            return redirect(url_for('owner_cottages'))
+        owner_id = session['owner_id']
+        name = request.form.get('room_name') or 'Untitled Cottage'
+        price = request.form.get('price')
+        capacity = request.form.get('capacity')
+        beds = request.form.get('beds')
+        other_feature2 = request.form.get('other_feature2')
+        other_feature3 = request.form.get('other_feature3')
+        other_feature5 = request.form.get('other_feature5')
+
+        # prepare filenames
+        filenames = [None] * 5
+        for i in range(1,6):
+            file = request.files.get(f'image{i}')
+            if file and file.filename and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                name_only, ext = os.path.splitext(filename)
+                uniq = f"{name_only}_{owner_id}_{uuid.uuid4().hex}_{i}{ext}"
+                save_path = os.path.join(app.config['UPLOAD_FOLDER'], uniq)
+                file.save(save_path)
+                filenames[i-1] = os.path.join('uploads', uniq).replace('\\','/')
+
+        cottage = Cottage(
+            owner_id=owner_id,
+            name=name,
+            price=price,
+            capacity=capacity,
+            beds=beds,
+            other_feature2=other_feature2,
+            other_feature3=other_feature3,
+            other_feature5=other_feature5,
+            image1=filenames[0],
+            image2=filenames[1],
+            image3=filenames[2],
+            image4=filenames[3],
+            image5=filenames[4]
+        )
+        db.session.add(cottage)
+        db.session.commit()
+        flash('Cottage added successfully.', 'success')
+        return redirect(url_for('owner_cottages'))
+
+    # GET
+    cottages = []
+    if 'owner_id' in session:
+        cottages = Cottage.query.filter_by(owner_id=session['owner_id']).all()
+    else:
+        cottages = Cottage.query.all()
+    return render_template('owner/cottages.html', cottages=cottages)
+
+
+@app.route('/owner/cottages/edit/<int:cottage_id>', methods=['POST'])
+def edit_cottage(cottage_id):
+    cottage = Cottage.query.get_or_404(cottage_id)
+    if 'owner_id' not in session or session['owner_id'] != cottage.owner_id:
+        flash('Not authorized to edit this cottage.', 'danger')
+        return redirect(url_for('owner_cottages'))
+
+    cottage.name = request.form.get('room_name') or cottage.name
+    cottage.price = request.form.get('price') or cottage.price
+    cottage.capacity = request.form.get('capacity') or cottage.capacity
+    # beds removed for cottages
+    cottage.other_feature2 = request.form.get('other_feature2') or cottage.other_feature2
+    cottage.other_feature3 = request.form.get('other_feature3') or cottage.other_feature3
+    cottage.other_feature5 = request.form.get('other_feature5') or cottage.other_feature5
+
+    # handle delete flags
+    for i in range(1,6):
+        if request.form.get(f'delete_image{i}') == '1':
+            old = getattr(cottage, f'image{i}')
+            if old:
+                _delete_static_file(old)
+            setattr(cottage, f'image{i}', None)
+
+    # handle replacements
+    for i in range(1,6):
+        file = request.files.get(f'image{i}')
+        if file and file.filename and allowed_file(file.filename):
+            old = getattr(cottage, f'image{i}')
+            if old:
+                _delete_static_file(old)
+            filename = secure_filename(file.filename)
+            name_only, ext = os.path.splitext(filename)
+            uniq = f"{name_only}_{cottage.owner_id}_{uuid.uuid4().hex}_{i}{ext}"
+            save_path = os.path.join(app.config['UPLOAD_FOLDER'], uniq)
+            file.save(save_path)
+            setattr(cottage, f'image{i}', os.path.join('uploads', uniq).replace('\\','/'))
+
+    db.session.commit()
+    flash('Cottage updated.', 'success')
+    return redirect(url_for('owner_cottages'))
+
+
+@app.route('/owner/cottages/delete/<int:cottage_id>', methods=['POST'])
+def delete_cottage(cottage_id):
+    cottage = Cottage.query.get_or_404(cottage_id)
+    if 'owner_id' not in session or session['owner_id'] != cottage.owner_id:
+        flash('Not authorized to delete this cottage.', 'danger')
+        return redirect(url_for('owner_cottages'))
+
+    for i in range(1,6):
+        img = getattr(cottage, f'image{i}')
+        if img:
+            _delete_static_file(img)
+
+    db.session.delete(cottage)
+    db.session.commit()
+    flash('Cottage deleted.', 'info')
+    return redirect(url_for('owner_cottages'))
 
 @app.route("/userSignUp", methods=["GET", "POST"])
 def user_sign_up():

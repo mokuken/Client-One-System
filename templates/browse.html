@@ -211,17 +211,39 @@
                         </svg>
                     </div>
                     <div class="offers">
+                        {# latest room image (first non-empty image field) #}
+                        {% set room_img = None %}
+                        {% if owner.rooms and owner.rooms|length > 0 %}
+                            {% set r = owner.rooms[-1] %}
+                            {% set room_img = r.image1 or r.image2 or r.image3 or r.image4 or r.image5 %}
+                        {% endif %}
                         <div class="room-img">
-                            <img src="/static/images/bg.webp" alt="Room">
+                            <img src="{{ url_for('static', filename=room_img) if room_img else url_for('static', filename='images/bg.webp') }}" alt="Room">
                         </div>
+
+                        {# latest cottage image #}
+                        {% set cottage_img = None %}
+                        {% if owner.cottages and owner.cottages|length > 0 %}
+                            {% set c = owner.cottages[-1] %}
+                            {% set cottage_img = c.image1 or c.image2 or c.image3 or c.image4 or c.image5 %}
+                        {% endif %}
                         <div class="cottage-img">
-                            <img src="/static/images/bg.webp" alt="Cottage">
+                            <img src="{{ url_for('static', filename=cottage_img) if cottage_img else url_for('static', filename='images/bg.webp') }}" alt="Cottage">
                         </div>
+
+                        {# activities image isn't modeled; keep fallback #}
                         <div class="activities-img">
-                            <img src="/static/images/bg.webp" alt="Activities">
+                            <img src="{{ url_for('static', filename='images/bg.webp') }}" alt="Activities">
                         </div>
+
+                        {# latest food image #}
+                        {% set food_img = None %}
+                        {% if owner.foods and owner.foods|length > 0 %}
+                            {% set f = owner.foods[-1] %}
+                            {% set food_img = f.image1 or f.image2 or f.image3 or f.image4 or f.image5 %}
+                        {% endif %}
                         <div class="food-img">
-                            <img src="/static/images/bg.webp" alt="Food">
+                            <img src="{{ url_for('static', filename=food_img) if food_img else url_for('static', filename='images/bg.webp') }}" alt="Food">
                         </div>
                     </div>
                 </div>

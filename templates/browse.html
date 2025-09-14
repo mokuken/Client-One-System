@@ -218,7 +218,9 @@
                             {% set room_img = r.image1 or r.image2 or r.image3 or r.image4 or r.image5 %}
                         {% endif %}
                         <div class="room-img">
-                            <img src="{{ url_for('static', filename=room_img) if room_img else url_for('static', filename='images/bg.webp') }}" alt="Room">
+                            {% if room_img %}
+                                <img src="{{ url_for('static', filename=room_img) }}" alt="Room">
+                            {% endif %}
                         </div>
 
                         {# latest cottage image #}
@@ -228,12 +230,14 @@
                             {% set cottage_img = c.image1 or c.image2 or c.image3 or c.image4 or c.image5 %}
                         {% endif %}
                         <div class="cottage-img">
-                            <img src="{{ url_for('static', filename=cottage_img) if cottage_img else url_for('static', filename='images/bg.webp') }}" alt="Cottage">
+                            {% if cottage_img %}
+                                <img src="{{ url_for('static', filename=cottage_img) }}" alt="Cottage">
+                            {% endif %}
                         </div>
 
                         {# activities image isn't modeled; keep fallback #}
                         <div class="activities-img">
-                            <img src="{{ url_for('static', filename='images/bg.webp') }}" alt="Activities">
+                            {# Activities image not modeled; omit default placeholder #}
                         </div>
 
                         {# latest food image #}
@@ -243,7 +247,9 @@
                             {% set food_img = f.image1 or f.image2 or f.image3 or f.image4 or f.image5 %}
                         {% endif %}
                         <div class="food-img">
-                            <img src="{{ url_for('static', filename=food_img) if food_img else url_for('static', filename='images/bg.webp') }}" alt="Food">
+                            {% if food_img %}
+                                <img src="{{ url_for('static', filename=food_img) }}" alt="Food">
+                            {% endif %}
                         </div>
                     </div>
                 </div>

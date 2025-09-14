@@ -238,23 +238,53 @@
                     </svg>
                 </div>
                 <div class="offer-images">
+                    {# show latest room image for this resort owner #}
+                    {% set resort_room_img = None %}
+                    {% if resort and resort.rooms and resort.rooms|length > 0 %}
+                        {% set rr = resort.rooms[-1] %}
+                        {% set resort_room_img = rr.image1 or rr.image2 or rr.image3 or rr.image4 or rr.image5 %}
+                    {% endif %}
                     <div class="room-img">
-                        <img src="https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=200&q=80" alt="Room">
+                        {% if resort_room_img %}
+                            <img src="{{ url_for('static', filename=resort_room_img) }}" alt="Room">
+                        {% endif %}
                     </div>
+
+                    {# show latest cottage image for this resort owner #}
+                    {% set resort_cottage_img = None %}
+                    {% if resort and resort.cottages and resort.cottages|length > 0 %}
+                        {% set rc = resort.cottages[-1] %}
+                        {% set resort_cottage_img = rc.image1 or rc.image2 or rc.image3 or rc.image4 or rc.image5 %}
+                    {% endif %}
                     <div class="cottage-img">
-                        <img src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=200&q=80" alt="Cottage">
+                        {% if resort_cottage_img %}
+                            <img src="{{ url_for('static', filename=resort_cottage_img) }}" alt="Cottage">
+                        {% endif %}
                     </div>
+
+                    {# activities placeholder (no model) #}
                     <div class="activities-img">
-                        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=200&q=80" alt="Activities">
+                        {# Activities image not modeled; omit default placeholder #}
                     </div>
+
+                    {# show latest food image for this resort owner #}
+                    {% set resort_food_img = None %}
+                    {% if resort and resort.foods and resort.foods|length > 0 %}
+                        {% set rf = resort.foods[-1] %}
+                        {% set resort_food_img = rf.image1 or rf.image2 or rf.image3 or rf.image4 or rf.image5 %}
+                    {% endif %}
                     <div class="food-img">
-                        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=80" alt="Food">
+                        {% if resort_food_img %}
+                            <img src="{{ url_for('static', filename=resort_food_img) }}" alt="Food">
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
+        {# Rooms offer: only render if at least one room has an image (provided by server) #}
+        {% if rooms_with_images and rooms_with_images|length > 0 %}
         <div class="offer">
-            <img src="https://images.unsplash.com/photo-1465156799763-2c087c332922?auto=format&fit=crop&w=500&q=80" alt="Other Example">
+            <img src="{{ url_for('static', filename=rooms_with_images[0]) }}" alt="Room">
             <div class="offer-details">
                 <h1>Rooms</h1>
                 <div class="rating">
@@ -268,23 +298,20 @@
                     </svg>
                 </div>
                 <div class="offer-images">
-                    <div class="room-one-img">
-                        <img src="https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=200&q=80" alt="Room">
-                    </div>
-                    <div class="room-two-img">
-                        <img src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=200&q=80" alt="Cottage">
-                    </div>
-                    <div class="room-three-img">
-                        <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=200&q=80" alt="Activities">
-                    </div>
-                    <div class="room-four-img">
-                        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=80" alt="Food">
-                    </div>
+                    {# Show up to 4 room images #}
+                    {% for room_img in rooms_with_images[:4] %}
+                        <div class="room-one-img">
+                            <img src="{{ url_for('static', filename=room_img) }}" alt="Room">
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
+        {% endif %}
+        {# Cottages offer: only render if at least one cottage has an image (provided by server) #}
+        {% if cottages_with_images and cottages_with_images|length > 0 %}
         <div class="offer">
-            <img src="https://images.unsplash.com/photo-1465156799763-2c087c332922?auto=format&fit=crop&w=500&q=80" alt="Other Example">
+            <img src="{{ url_for('static', filename=cottages_with_images[0]) }}" alt="Cottage">
             <div class="offer-details">
                 <h1>Cottage</h1>
                 <div class="rating">
@@ -298,21 +325,17 @@
                     </svg>
                 </div>
                 <div class="offer-images">
-                    <div class="cottage-one-img">
-                        <img src="https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=200&q=80" alt="Room">
-                    </div>
-                    <div class="cottage-two-img">
-                        <img src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=200&q=80" alt="Cottage">
-                    </div>
-                    <div class="cottage-three-img">
-                        <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=200&q=80" alt="Activities">
-                    </div>
-                    <div class="cottage-four-img">
-                        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=80" alt="Food">
-                    </div>
+                    {# Show up to 4 cottage images #}
+                    {% for cottage_img in cottages_with_images[:4] %}
+                        <div class="cottage-one-img">
+                            <img src="{{ url_for('static', filename=cottage_img) }}" alt="Cottage">
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
+        {% endif %}
+        {# Activities not modeled; keep placeholder or remove entirely. Keeping placeholder for now. #}
         <div class="offer">
             <img src="https://images.unsplash.com/photo-1465156799763-2c087c332922?auto=format&fit=crop&w=500&q=80" alt="Other Example">
             <div class="offer-details">
@@ -343,8 +366,10 @@
                 </div>
             </div>
         </div>
+        {# Foods offer: only render if at least one food has an image (provided by server) #}
+        {% if foods_with_images and foods_with_images|length > 0 %}
         <div class="offer">
-            <img src="https://images.unsplash.com/photo-1465156799763-2c087c332922?auto=format&fit=crop&w=500&q=80" alt="Other Example">
+            <img src="{{ url_for('static', filename=foods_with_images[0]) }}" alt="Food">
             <div class="offer-details">
                 <h1>Foods</h1>
                 <div class="rating">
@@ -358,21 +383,16 @@
                     </svg>
                 </div>
                 <div class="offer-images">
-                    <div class="food-one-img">
-                        <img src="https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=200&q=80" alt="Room">
-                    </div>
-                    <div class="food-two-img">
-                        <img src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=200&q=80" alt="Cottage">
-                    </div>
-                    <div class="food-three-img">
-                        <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=200&q=80" alt="Activities">
-                    </div>
-                    <div class="food-four-img">
-                        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=80" alt="Food">
-                    </div>
+                    {# Show up to 4 food images #}
+                    {% for food_img in foods_with_images[:4] %}
+                        <div class="food-one-img">
+                            <img src="{{ url_for('static', filename=food_img) }}" alt="Food">
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
 </body>
 </html>

@@ -754,7 +754,28 @@ def view_resort_main():
     resort = None
     if owner_id:
         resort = Owner.query.get(owner_id)
-    return render_template('viewResortMain.html', resort=resort)
+    # build lists of images for rooms, cottages, and foods (first non-empty image per item)
+    rooms_with_images = []
+    cottages_with_images = []
+    foods_with_images = []
+    if resort:
+        for r in getattr(resort, 'rooms', []) or []:
+            img = r.image1 or r.image2 or r.image3 or r.image4 or r.image5
+            if img:
+                rooms_with_images.append(img)
+        for c in getattr(resort, 'cottages', []) or []:
+            img = c.image1 or c.image2 or c.image3 or c.image4 or c.image5
+            if img:
+                cottages_with_images.append(img)
+        for f in getattr(resort, 'foods', []) or []:
+            img = f.image1 or f.image2 or f.image3 or f.image4 or f.image5
+            if img:
+                foods_with_images.append(img)
+
+    return render_template('viewResortMain.html', resort=resort,
+                           rooms_with_images=rooms_with_images,
+                           cottages_with_images=cottages_with_images,
+                           foods_with_images=foods_with_images)
 
 if __name__ == '__main__':
     with app.app_context():

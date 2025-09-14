@@ -777,6 +777,54 @@ def view_resort_main():
                            cottages_with_images=cottages_with_images,
                            foods_with_images=foods_with_images)
 
+
+@app.route('/viewResortRoom')
+def view_resort_room():
+    owner_id = request.args.get('owner_id')
+    owner = None
+    rooms = []
+    if owner_id:
+        owner = Owner.query.get(owner_id)
+        if owner:
+            rooms = getattr(owner, 'rooms', []) or []
+    else:
+        # show all rooms when no owner specified
+        rooms = Room.query.all()
+
+    return render_template('viewResortRoom.html', owner=owner, rooms=rooms)
+
+
+@app.route('/viewResortCottage')
+def view_resort_cottage():
+    owner_id = request.args.get('owner_id')
+    owner = None
+    cottages = []
+    if owner_id:
+        owner = Owner.query.get(owner_id)
+        if owner:
+            cottages = getattr(owner, 'cottages', []) or []
+    else:
+        # show all cottages when no owner specified
+        cottages = Cottage.query.all()
+
+    return render_template('viewResortCottage.html', owner=owner, cottages=cottages)
+
+
+@app.route('/viewResortFood')
+def view_resort_food():
+    owner_id = request.args.get('owner_id')
+    owner = None
+    foods = []
+    if owner_id:
+        owner = Owner.query.get(owner_id)
+        if owner:
+            foods = getattr(owner, 'foods', []) or []
+    else:
+        # show all foods when no owner specified
+        foods = Food.query.all()
+
+    return render_template('viewResortFood.html', owner=owner, foods=foods)
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()

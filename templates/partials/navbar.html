@@ -114,6 +114,30 @@
     .login-container .register-link:hover {
         text-decoration: underline;
     }
+
+    /* Owner theme overrides (light orange) */
+    .owner-theme h2 {
+        color: #e67e22; /* orange heading */
+    }
+    .owner-theme input[type="text"],
+    .owner-theme input[type="password"] {
+        border: 1px solid #ffd9b3; /* light orange border */
+    }
+    .owner-theme input[type="text"]:focus,
+    .owner-theme input[type="password"]:focus {
+        border: 1.5px solid #ff9f43; /* darker orange on focus */
+        background: #fff4eb;
+    }
+    .owner-theme button {
+        background: linear-gradient(90deg, #ffb86b 0%, #ff8c42 100%);
+        color: #fff;
+    }
+    .owner-theme button:hover {
+        background: linear-gradient(90deg, #ff8c42 0%, #ffb86b 100%);
+    }
+    .owner-theme .register-link {
+        color: #ff8c42;
+    }
 </style>
 <div class="navbar">
     <p class="title">Ariva Ivisan</p>
@@ -145,7 +169,7 @@
 </div>
 <!-- Modal for Resort Owner Login -->
 <div id="ownerLoginModal" class="modal-overlay" style="display:none;">
-    <div class="login-container">
+    <div class="login-container owner-theme">
         <h2>IVISAN BEACH & RESORT</h2>
         <p>Resort Owner Login</p>
         <form method="POST" action="{{ url_for('login') }}">

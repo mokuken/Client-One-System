@@ -283,7 +283,8 @@
         </div>
         {# Rooms offer: only render if at least one room has an image (provided by server) #}
         {% if rooms_with_images and rooms_with_images|length > 0 %}
-        <div class="offer">
+        <a class="offer-link" href="{% if resort %}{{ url_for('view_resort_room') }}?owner_id={{ resort.id }}{% else %}{{ url_for('view_resort_room') }}{% endif %}" style="text-decoration:none; color:inherit;">
+        <div class="offer" data-owner="{{ resort.id if resort else '' }}">
             <img src="{{ url_for('static', filename=rooms_with_images[0]) }}" alt="Room">
             <div class="offer-details">
                 <h1>Rooms</h1>
@@ -306,11 +307,13 @@
                     {% endfor %}
                 </div>
             </div>
-        </div>
-        {% endif %}
+    </div>
+    </a>
+    {% endif %}
         {# Cottages offer: only render if at least one cottage has an image (provided by server) #}
         {% if cottages_with_images and cottages_with_images|length > 0 %}
-        <div class="offer">
+        <a class="offer-link" href="{% if resort %}{{ url_for('view_resort_cottage') }}?owner_id={{ resort.id }}{% else %}{{ url_for('view_resort_cottage') }}{% endif %}" style="text-decoration:none; color:inherit;">
+        <div class="offer" data-owner="{{ resort.id if resort else '' }}">
             <img src="{{ url_for('static', filename=cottages_with_images[0]) }}" alt="Cottage">
             <div class="offer-details">
                 <h1>Cottage</h1>
@@ -334,6 +337,7 @@
                 </div>
             </div>
         </div>
+        </a>
         {% endif %}
         {# Activities not modeled; keep placeholder or remove entirely. Keeping placeholder for now. #}
         <div class="offer">
@@ -368,7 +372,8 @@
         </div>
         {# Foods offer: only render if at least one food has an image (provided by server) #}
         {% if foods_with_images and foods_with_images|length > 0 %}
-        <div class="offer">
+        <a class="offer-link" href="{% if resort %}{{ url_for('view_resort_food') }}?owner_id={{ resort.id }}{% else %}{{ url_for('view_resort_food') }}{% endif %}" style="text-decoration:none; color:inherit;">
+        <div class="offer" data-owner="{{ resort.id if resort else '' }}">
             <img src="{{ url_for('static', filename=foods_with_images[0]) }}" alt="Food">
             <div class="offer-details">
                 <h1>Foods</h1>
@@ -392,6 +397,7 @@
                 </div>
             </div>
         </div>
+        </a>
         {% endif %}
     </div>
 </body>

@@ -318,49 +318,52 @@
                 </div>
             </div>
         </div>
-        <div class="offer-header" style="display: flex;align-items: center;justify-content: center;">
-            <div>
-                <h1>Rooms</h1>
-            </div>
-        </div>
-
-        {# Render rooms provided by the view_resort_room route #}
-        {% if rooms and rooms|length > 0 %}
-            {% for room in rooms %}
-                <div class="offer">
-                    {# choose first available image for the room #}
-                    {% set room_img = room.image1 or room.image2 or room.image3 or room.image4 or room.image5 %}
-                    {% if room_img %}
-                        <img src="{{ url_for('static', filename=room_img) }}" alt="{{ room.name }}">
-                    {% else %}
-                        <img src="https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=200&q=80" alt="Room">
-                    {% endif %}
-                    <div class="offer-details">
-                        <h1>{{ room.name }}</h1>
-                        <div class="rating">
-                            <div class="stars">★ ★ ★ ☆ ☆</div>
-                            <div class="number-of-reviews">(45 reviews)</div>
-                        </div>
-                        <div class="location">
-                            {{ owner.resort_address if owner else 'Location' }}
-                            <svg style="vertical-align: middle; margin-left: 6px;" width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                <path d="M12 2C7.03 2 3 6.03 3 11c0 5.25 7.05 10.74 8.09 11.52a1 1 0 0 0 1.22 0C13.95 21.74 21 16.25 21 11c0-4.97-4.03-9-9-9zm0 17.88C9.14 17.1 5 13.61 5 11c0-3.86 3.14-7 7-7s7 3.14 7 7c0 2.61-4.14 6.1-7 8.88zm0-10.38A2.38 2.38 0 1 0 12 13.88 2.38 2.38 0 0 0 12 7.5z" fill="#4a90e2"/>
-                            </svg>
-                        </div>
-                        <div class="offer-details">
-                            <h1>{{ room.price if room.price else 'Price not set' }}(per night)</h1>
-                            <h4>{{ room.capacity or 'N/A' }} Person</h4>
-                            {% if room.other_feature2 %}<h4>{{ room.other_feature2 }}</h4>{% endif %}
-                            {% if room.other_feature3 %}<h4>{{ room.other_feature3 }}</h4>{% endif %}
-                            {% if room.other_feature5 %}<h4>{{ room.other_feature5 }}</h4>{% endif %}
-                        </div>
-                    </div>
-                    <button class="check-date-btn">Check Date</button>
+            <div class="offer-header" style="display: flex;align-items: center;justify-content: center;">
+                <div>
+                    <h1>Cottages</h1>
                 </div>
-            {% endfor %}
-        {% else %}
-            <div style="width:1000px; text-align:center; background:#fff; padding:24px; border-radius:18px; box-shadow:0 4px 24px rgba(0,0,0,0.08);">No rooms available.</div>
-        {% endif %}
+            </div>
+
+            {# Render foods provided by the view_resort_food route #}
+            {% if foods and foods|length > 0 %}
+                {% for food in foods %}
+                    <div class="offer">
+                        {# choose first available image for the food #}
+                        {% set food_img = food.image1 or food.image2 or food.image3 or food.image4 or food.image5 %}
+                        {% if food_img %}
+                            <img src="{{ url_for('static', filename=food_img) }}" alt="{{ food.name }}">
+                        {% else %}
+                            <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=80" alt="Food">
+                        {% endif %}
+                        <div class="offer-details">
+                            <h1>{{ food.name }}</h1>
+                            <div class="rating">
+                                <div class="stars">★ ★ ★ ★ ☆</div>
+                                <div class="number-of-reviews">(45 reviews)</div>
+                            </div>
+                            <div class="location">
+                                {{ owner.resort_address if owner else 'Location' }}
+                                <svg style="vertical-align: middle; margin-left: 6px;" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 2C7.03 2 3 6.03 3 11c0 5.25 7.05 10.74 8.09 11.52a1 1 0 0 0 1.22 0C13.95 21.74 21 16.25 21 11c0-4.97-4.03-9-9-9zm0 17.88C9.14 17.1 5 13.61 5 11c0-3.86 3.14-7 7-7s7 3.14 7 7c0 2.61-4.14 6.1-7 8.88zm0-10.38A2.38 2.38 0 1 0 12 13.88 2.38 2.38 0 0 0 12 7.5z" fill="#4a90e2"/>
+                                </svg>
+                            </div>
+                            <div class="offer-details">
+                                <h1>{{ food.price if food.price else 'Price not set' }}</h1>
+                                {% if food.size %}<h4>Size: {{ food.size }}</h4>{% endif %}
+                                {% if food.capacity %}<h4>Serves: {{ food.capacity }}</h4>{% endif %}
+                                {% if food.other_feature1 %}<h4>{{ food.other_feature1 }}</h4>{% endif %}
+                                {% if food.other_feature2 %}<h4>{{ food.other_feature2 }}</h4>{% endif %}
+                                {% if food.other_feature3 %}<h4>{{ food.other_feature3 }}</h4>{% endif %}
+                            </div>
+                        </div>
+                        <button class="check-date-btn">Order / Check Date</button>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div style="width:1000px; text-align:center; background:#fff; padding:24px; border-radius:18px; box-shadow:0 4px 24px rgba(0,0,0,0.08);">No foods available.</div>
+            {% endif %}
+
+    {# (rooms listing removed - this view shows cottages only) #}
     </div>
 </body>
 <script>

@@ -44,7 +44,7 @@ class SQLiteApp:
     def __init__(self, root, db_manager):
         self.db = db_manager
         self.root = root
-        self.root.title("FarmHub Database")
+        self.root.title("Ariva Ivisan's Database")
         self.root.geometry("1100x700")
         self.root.configure(padx=20, pady=20)
 

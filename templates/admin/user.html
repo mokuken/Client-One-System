@@ -133,11 +133,11 @@
     <div class="navbar">
         <p class="title">Ariva Ivisan</p>
         <div class="nav-links">
-            <a href="#">Logout</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
         </div>
     </div>
     <div class="content">
-        
+
         {% include 'partials/admin_sidebar.html' %}
 
         <div class="main">

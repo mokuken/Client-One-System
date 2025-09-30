@@ -137,11 +137,11 @@
 <body>
     <div class="signup-container">
         <h1>Owner Fill Up Form</h1>
-        <form method="POST" action="{{ url_for('owner_sign_up') }}">
+    <form method="POST" action="{{ url_for('owner_sign_up') }}" enctype="multipart/form-data">
             <div class="user-container">
                 <div class="profile-container">
                     <div class="profile-img"></div>
-                    <input type="file" accept=".txt, .doc, .docx, .pdf" placeholder="Upload your file here">
+                    <input type="file" name="avatar" accept="image/png, image/jpeg, image/jpg, image/gif, image/webp">
                 </div>
                 <div class="user-information">
                     <div>

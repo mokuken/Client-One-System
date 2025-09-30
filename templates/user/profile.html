@@ -236,11 +236,19 @@
                 <div class="profile-title">Your Profile Information</div>
             </div>
             <div class="profile-box">
-                <div class="profile-container">
-                    <div class="profile-img"></div>
-                    <h2>{{ user.name }}</h2>
-                    <div class="profile-username">@{{ user.username }}</div>
-                </div>
+                        <div class="profile-container">
+                            {%- set avatar_url = None -%}
+                            {%- if user.avatar -%}
+                                {%- set avatar_url = url_for('static', filename=user.avatar) -%}
+                            {%- elif session.get('avatar') -%}
+                                {%- set avatar_url = url_for('static', filename=session.get('avatar')) -%}
+                            {%- else -%}
+                                {%- set avatar_url = 'https://via.placeholder.com/100' -%}
+                            {%- endif -%}
+                            <div class="profile-img" style="background-image: url('{{ avatar_url }}'); background-size: cover; background-position: center"></div>
+                            <h2>{{ user.name }}</h2>
+                            <div class="profile-username">@{{ user.username }}</div>
+                        </div>
                 <div class="user-information">
                     <div>
                         <div class="info-label">Email</div>

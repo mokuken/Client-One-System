@@ -31,6 +31,7 @@ class User(db.Model):
     emergency_name = db.Column(db.String(120))
     emergency_number = db.Column(db.String(30))
     relationship = db.Column(db.String(50))
+    avatar = db.Column(db.String(300))
     # Add other fields as needed
 
 class Owner(db.Model):
@@ -53,6 +54,7 @@ class Owner(db.Model):
     gcash = db.Column(db.String(120))
     paymaya = db.Column(db.String(120))
     paypal = db.Column(db.String(120))
+    avatar = db.Column(db.String(300))
     # Add other fields as needed
 
 
@@ -166,6 +168,7 @@ def user_profile():
             "emergency_name": session.get("emergency_name"),
             "emergency_number": session.get("emergency_number"),
             "relationship": session.get("relationship"),
+            "avatar": session.get("avatar"),
         }
     return render_template("user/profile.html", user=user_data)
 
@@ -197,6 +200,7 @@ def owner_profile():
             "emergency_name": session.get("emergency_name"),
             "emergency_number": session.get("emergency_number"),
             "relationship": session.get("relationship"),
+            "avatar": session.get("owner_avatar"),
         }
     return render_template("owner/profile.html", user=owner_data)
 
@@ -616,6 +620,17 @@ def user_sign_up():
             flash("Username already exists.", "danger")
             return redirect(url_for("user_sign_up"))
         hashed_pw = generate_password_hash(password)
+        # handle avatar upload (single image)
+        avatar_path = None
+        file = request.files.get('avatar')
+        if file and file.filename and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            name_only, ext = os.path.splitext(filename)
+            uniq = f"{name_only}_{uuid.uuid4().hex}{ext}"
+            save_path = os.path.join(app.config['UPLOAD_FOLDER'], uniq)
+            file.save(save_path)
+            avatar_path = os.path.join('uploads', uniq).replace('\\','/')
+
         user = User(
             username=username,
             password=hashed_pw,
@@ -630,6 +645,7 @@ def user_sign_up():
             emergency_name=emergency_name,
             emergency_number=emergency_number,
             relationship=relationship
+            ,avatar=avatar_path
         )
         db.session.add(user)
         db.session.commit()
@@ -668,6 +684,17 @@ def owner_sign_up():
             flash("Username already exists.", "danger")
             return redirect(url_for("owner_sign_up"))
         hashed_pw = generate_password_hash(password)
+        # handle avatar upload (single image)
+        avatar_path = None
+        file = request.files.get('avatar')
+        if file and file.filename and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            name_only, ext = os.path.splitext(filename)
+            uniq = f"{name_only}_{uuid.uuid4().hex}{ext}"
+            save_path = os.path.join(app.config['UPLOAD_FOLDER'], uniq)
+            file.save(save_path)
+            avatar_path = os.path.join('uploads', uniq).replace('\\','/')
+
         owner = Owner(
             username=username,
             password=hashed_pw,
@@ -687,6 +714,7 @@ def owner_sign_up():
             gcash=gcash,
             paymaya=paymaya,
             paypal=paypal
+            ,avatar=avatar_path
         )
         db.session.add(owner)
         db.session.commit()
@@ -721,6 +749,7 @@ def login():
             session["owner_gcash"] = owner.gcash
             session["owner_paymaya"] = owner.paymaya
             session["owner_paypal"] = owner.paypal
+            session["owner_avatar"] = owner.avatar
             # keep consistency for template fields (if used)
             session["emergency_name"] = None
             session["emergency_number"] = None
@@ -756,6 +785,7 @@ def login():
             session["emergency_name"] = user.emergency_name
             session["emergency_number"] = user.emergency_number
             session["relationship"] = user.relationship
+            session["avatar"] = user.avatar
             flash("Logged in as user!", "success")
             return redirect(url_for("browse"))
         else:

@@ -56,6 +56,15 @@ class Owner(db.Model):
     # Add other fields as needed
 
 
+class Admin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+    name = db.Column(db.String(120))
+    email = db.Column(db.String(120))
+    # add more admin-specific fields if needed
+
+
 class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=True)
@@ -720,6 +729,17 @@ def login():
             return redirect(url_for("browse"))
         else:
             flash("Invalid owner credentials.", "danger")
+    elif user_type == "admin":
+        admin = Admin.query.filter_by(username=username).first()
+        if admin and check_password_hash(admin.password, password):
+            session["admin_id"] = admin.id
+            session["admin_username"] = admin.username
+            session["admin_name"] = admin.name
+            session["admin_email"] = admin.email
+            flash("Logged in as admin!", "success")
+            return redirect(url_for("admin_home"))
+        else:
+            flash("Invalid admin credentials.", "danger")
     else:
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
@@ -741,6 +761,15 @@ def login():
         else:
             flash("Invalid user credentials.", "danger")
     return redirect(url_for("home"))
+
+
+@app.route('/admin')
+def admin_home():
+    # simple admin landing page; render admin template if exists otherwise redirect
+    if 'admin_id' not in session:
+        flash('You must be logged in as admin to view that page.', 'danger')
+        return redirect(url_for('home'))
+    return render_template('admin/home.html')
 
 @app.route("/logout")
 def logout():
@@ -828,4 +857,11 @@ def view_resort_food():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        # Ensure default admin exists
+        default_admin = Admin.query.filter_by(username='admin').first()
+        if not default_admin:
+            hashed = generate_password_hash('password')
+            admin = Admin(username='admin', password=hashed, name='Administrator', email='admin@example.com')
+            db.session.add(admin)
+            db.session.commit()
     app.run(debug=True)

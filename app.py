@@ -737,7 +737,7 @@ def login():
             session["admin_name"] = admin.name
             session["admin_email"] = admin.email
             flash("Logged in as admin!", "success")
-            return redirect(url_for("admin_home"))
+            return redirect(url_for("admin_dashboard"))
         else:
             flash("Invalid admin credentials.", "danger")
     else:
@@ -764,12 +764,12 @@ def login():
 
 
 @app.route('/admin')
-def admin_home():
+def admin_dashboard():
     # simple admin landing page; render admin template if exists otherwise redirect
     if 'admin_id' not in session:
         flash('You must be logged in as admin to view that page.', 'danger')
         return redirect(url_for('home'))
-    return render_template('admin/home.html')
+    return render_template('admin/dashboard.html')
 
 
 @app.route('/admin/users')

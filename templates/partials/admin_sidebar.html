@@ -70,7 +70,7 @@
 
 <div class="sidebar">
   <h1>Admin</h1>
-  <a href="{{ url_for('admin_home') }}" class="{% if request.path == url_for('admin_home') %}active{% endif %}">
+  <a href="{{ url_for('admin_dashboard') }}" class="{% if request.path == url_for('admin_dashboard') %}active{% endif %}">
     <svg
       fill="#000000"
       viewBox="-4.5 0 32 32"
@@ -91,7 +91,7 @@
         ></path>
       </g>
     </svg>
-    <p>Home</p>
+    <p>Dashboard</p>
   </a>
   <a href="{{ url_for('admin_users') }}" class="{% if request.path.startswith(url_for('admin_users')) %}active{% endif %}">
     <svg

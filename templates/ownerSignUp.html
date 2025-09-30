@@ -184,4 +184,33 @@
         </form>
     </div>
 </body>
+    <script>
+        // Preview selected avatar in the circular .profile-img element
+        (function() {
+            const fileInput = document.querySelector('.profile-container input[name="avatar"]');
+            const profileImg = document.querySelector('.profile-container .profile-img');
+            const defaultBg = profileImg ? getComputedStyle(profileImg).backgroundImage : '';
+
+            if (!fileInput || !profileImg) return;
+
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (!file) {
+                    // restore default
+                    profileImg.style.backgroundImage = defaultBg;
+                    return;
+                }
+
+                if (!file.type.startsWith('image/')) return;
+
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    profileImg.style.backgroundImage = `url('${evt.target.result}')`;
+                    profileImg.style.backgroundSize = 'cover';
+                    profileImg.style.backgroundPosition = 'center';
+                };
+                reader.readAsDataURL(file);
+            });
+        })();
+    </script>
 </html>

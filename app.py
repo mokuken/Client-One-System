@@ -771,6 +771,34 @@ def admin_home():
         return redirect(url_for('home'))
     return render_template('admin/home.html')
 
+
+@app.route('/admin/users')
+def admin_users():
+    if 'admin_id' not in session:
+        flash('You must be logged in as admin to view that page.', 'danger')
+        return redirect(url_for('home'))
+    users = User.query.all()
+    return render_template('admin/user.html', users=users)
+
+
+@app.route('/admin/owners')
+def admin_owners():
+    if 'admin_id' not in session:
+        flash('You must be logged in as admin to view that page.', 'danger')
+        return redirect(url_for('home'))
+    owners = Owner.query.all()
+    return render_template('admin/owners.html', owners=owners)
+
+
+@app.route('/admin/chats')
+def admin_chats():
+    if 'admin_id' not in session:
+        flash('You must be logged in as admin to view that page.', 'danger')
+        return redirect(url_for('home'))
+    # Template renders chat UI; pass empty list for now
+    chats = []
+    return render_template('admin/chats.html', chats=chats)
+
 @app.route("/logout")
 def logout():
     session.clear()

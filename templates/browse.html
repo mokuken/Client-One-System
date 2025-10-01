@@ -182,6 +182,67 @@
         .login-container .register-link:hover {
             text-decoration: underline;
         }
+        /* Empty state styles */
+        .empty-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 60px 20px;
+        }
+        .empty-card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(245,250,255,0.95) 100%);
+            border-radius: 16px;
+            padding: 36px 34px;
+            max-width: 720px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 12px 40px rgba(16,24,40,0.12), inset 0 1px 0 rgba(255,255,255,0.6);
+            border: 1px solid rgba(33,147,176,0.08);
+        }
+        .empty-illustration {
+            width: 160px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 18px;
+            box-shadow: 0 8px 24px rgba(33,147,176,0.08);
+            background: linear-gradient(90deg, #e6f7ff, #f0fff4);
+        }
+        .empty-card h2 {
+            font-size: 1.6rem;
+            color: #154a57;
+            margin-bottom: 8px;
+        }
+        .empty-card p {
+            color: #4b5563;
+            margin-bottom: 18px;
+            line-height: 1.4;
+        }
+        .empty-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 10px 18px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .btn.primary {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            border: none;
+            box-shadow: 0 8px 24px rgba(33,147,176,0.18);
+        }
+        .btn.secondary {
+            background: transparent;
+            color: #154a57;
+            border: 1.5px solid rgba(21,74,87,0.12);
+        }
     </style>
 </head>
 <body>
@@ -194,6 +255,19 @@
     {% endif %}
     
     <div class="content">
+        {% if not owners or owners|length == 0 %}
+        <div class="empty-state">
+            <div class="empty-card">
+                <img src="{{ url_for('static', filename='images/bg.webp') }}" alt="No Resorts" class="empty-illustration">
+                <h2>No resorts yet</h2>
+                <p>We couldn't find any resorts. Owners can add their resort to get listed here. In the meantime, feel free to sign up or come back later.</p>
+                <div class="empty-actions">
+                    <a href="{{ url_for('owner_sign_up') }}" class="btn primary">Become an Owner</a>
+                    <a href="{{ url_for('user_sign_up') }}" class="btn secondary">Browse as Guest</a>
+                </div>
+            </div>
+        </div>
+        {% else %}
         {% for owner in owners %}
         <a href="{{ url_for('view_resort_main', owner_id=owner.id) }}" style="text-decoration:none;color:inherit;">
             <div class="resort">
@@ -256,6 +330,7 @@
             </div>
         </a>
         {% endfor %}
+        {% endif %}
     <!-- Modal for Customer Login -->
     <div id="loginModal" class="modal-overlay" style="display:none;">
         <div class="login-container">
@@ -286,10 +361,10 @@
     <div id="signUpModal" class="modal-overlay" style="display:none;">
         <div class="login-container">
             <h2>Sign Up As</h2>
-            <a href="userSignUp.html">
+            <a href="{{ url_for('user_sign_up') }}">
                 <button id="signUpCustomerBtn" style="margin-bottom:1rem;">Customer</button>
             </a>
-            <a href="ownerSignUp.html">
+            <a href="{{ url_for('owner_sign_up') }}">
                 <button id="signUpOwnerBtn">Resort Owner</button>
             </a>
             <br>

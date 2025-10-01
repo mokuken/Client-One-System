@@ -799,7 +799,9 @@ def admin_dashboard():
     if 'admin_id' not in session:
         flash('You must be logged in as admin to view that page.', 'danger')
         return redirect(url_for('home'))
-    return render_template('admin/dashboard.html')
+    # show latest 5 resorts (owners) on the admin dashboard
+    recent_resorts = Owner.query.order_by(Owner.id.desc()).limit(5).all()
+    return render_template('admin/dashboard.html', recent_resorts=recent_resorts)
 
 
 @app.route('/admin/users')

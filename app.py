@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -773,10 +773,16 @@ def login():
             session["emergency_name"] = None
             session["emergency_number"] = None
             session["relationship"] = None
+            # on AJAX requests return JSON so client can stay on the page and handle navigation
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
+                return jsonify({"success": True, "redirect": url_for("browse")})
             flash("Logged in as owner!", "success")
             return redirect(url_for("browse"))
         else:
-            flash("Invalid owner credentials.", "danger")
+            message = "Invalid owner credentials."
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
+                return jsonify({"success": False, "message": message, "user_type": "owner"})
+            flash(message, "danger")
     elif user_type == "admin":
         admin = Admin.query.filter_by(username=username).first()
         if admin and check_password_hash(admin.password, password):
@@ -784,10 +790,15 @@ def login():
             session["admin_username"] = admin.username
             session["admin_name"] = admin.name
             session["admin_email"] = admin.email
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
+                return jsonify({"success": True, "redirect": url_for("admin_dashboard")})
             flash("Logged in as admin!", "success")
             return redirect(url_for("admin_dashboard"))
         else:
-            flash("Invalid admin credentials.", "danger")
+            message = "Invalid admin credentials."
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
+                return jsonify({"success": False, "message": message, "user_type": "admin"})
+            flash(message, "danger")
     else:
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
@@ -805,11 +816,17 @@ def login():
             session["emergency_number"] = user.emergency_number
             session["relationship"] = user.relationship
             session["avatar"] = user.avatar
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
+                return jsonify({"success": True, "redirect": url_for("browse")})
             flash("Logged in as user!", "success")
             return redirect(url_for("browse"))
         else:
-            flash("Invalid user credentials.", "danger")
-    return redirect(url_for("home"))
+            message = "Invalid user credentials."
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
+                return jsonify({"success": False, "message": message, "user_type": "user"})
+            flash(message, "danger")
+    # For non-AJAX requests, keep previous behavior (redirect back to referrer or home)
+    return redirect(request.referrer or url_for("home"))
 
 
 @app.route('/admin')

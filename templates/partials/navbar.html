@@ -158,8 +158,9 @@
     <div class="login-container">
         <h2>IVISAN BEACH & RESORT</h2>
         <p>Customer Login</p>
-        <form method="POST" action="{{ url_for('login') }}">
+        <form id="customerLoginForm" method="POST" action="{{ url_for('login') }}">
             <input type="hidden" name="user_type" value="user">
+            <div id="customerLoginMessage" style="color:#d9534f;margin-bottom:0.5rem;display:none"></div>
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
             <button type="submit">Login</button>
@@ -172,8 +173,9 @@
     <div class="login-container owner-theme">
         <h2>IVISAN BEACH & RESORT</h2>
         <p>Resort Owner Login</p>
-        <form method="POST" action="{{ url_for('login') }}">
+        <form id="ownerLoginForm" method="POST" action="{{ url_for('login') }}">
             <input type="hidden" name="user_type" value="owner">
+            <div id="ownerLoginMessage" style="color:#d9534f;margin-bottom:0.5rem;display:none"></div>
             <input type="text" name="username" placeholder="Owner Username" required>
             <input type="password" name="password" placeholder="Owner Password" required>
             <button type="submit">Login</button>
@@ -212,8 +214,9 @@
     <div class="login-container owner-theme">
         <h2>IVISAN BEACH & RESORT</h2>
         <p>Admin Login</p>
-        <form method="POST" action="{{ url_for('login') }}">
+        <form id="adminLoginForm" method="POST" action="{{ url_for('login') }}">
             <input type="hidden" name="user_type" value="admin">
+            <div id="adminLoginMessage" style="color:#d9534f;margin-bottom:0.5rem;display:none"></div>
             <input type="text" name="username" placeholder="Admin Username" required>
             <input type="password" name="password" placeholder="Admin Password" required>
             <button type="submit">Login</button>
@@ -307,4 +310,63 @@
                 this.style.display = 'none';
             }
         });
+
+        // Helper to submit login forms via fetch and display inline error messages
+        async function submitLoginForm(formEl, messageEl, modalEl) {
+            messageEl.style.display = 'none';
+            const formData = new FormData(formEl);
+            try {
+                const resp = await fetch(formEl.action, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: formData
+                });
+                const data = await resp.json();
+                if (data && data.success) {
+                    // on success navigate to provided redirect if present
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                        return;
+                    }
+                    // fallback: reload
+                    window.location.reload();
+                } else {
+                    const msg = (data && data.message) ? data.message : 'Login failed.';
+                    messageEl.textContent = msg;
+                    messageEl.style.display = 'block';
+                    // keep modal open
+                    if (modalEl) modalEl.style.display = 'flex';
+                }
+            } catch (err) {
+                messageEl.textContent = 'Network or server error. Please try again.';
+                messageEl.style.display = 'block';
+                if (modalEl) modalEl.style.display = 'flex';
+            }
+        }
+
+        // Attach handlers for customer, owner and admin login forms
+        const customerForm = document.getElementById('customerLoginForm');
+        const customerMsg = document.getElementById('customerLoginMessage');
+        if (customerForm) {
+            customerForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitLoginForm(customerForm, customerMsg, document.getElementById('loginModal'));
+            });
+        }
+        const ownerForm = document.getElementById('ownerLoginForm');
+        const ownerMsg = document.getElementById('ownerLoginMessage');
+        if (ownerForm) {
+            ownerForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitLoginForm(ownerForm, ownerMsg, document.getElementById('ownerLoginModal'));
+            });
+        }
+        const adminForm = document.getElementById('adminLoginForm');
+        const adminMsg = document.getElementById('adminLoginMessage');
+        if (adminForm) {
+            adminForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitLoginForm(adminForm, adminMsg, document.getElementById('adminLoginModal'));
+            });
+        }
 </script>

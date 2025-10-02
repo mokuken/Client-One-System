@@ -7,9 +7,17 @@ import uuid
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
-# file upload settings
+# base directory for paths used by the app
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# ensure instance folder exists (so the sqlite file can be created there)
+INSTANCE_DIR = os.path.join(BASE_DIR, 'instance')
+os.makedirs(INSTANCE_DIR, exist_ok=True)
+# SQLAlchemy DB (store under instance/ to match view_db.py)
+# Use absolute path so SQLAlchemy can open the file regardless of CWD
+DB_FILE = os.path.join(INSTANCE_DIR, 'site.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_FILE.replace('\\','/')}"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# file upload settings
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -647,8 +655,14 @@ def user_sign_up():
             relationship=relationship
             ,avatar=avatar_path
         )
-        db.session.add(user)
-        db.session.commit()
+        try:
+            db.session.add(user)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            # Surface the error to the user and keep them on the signup page
+            flash(f"Registration failed: {e}", "danger")
+            return redirect(url_for("user_sign_up"))
         flash("Registration successful! Please log in.", "success")
         return redirect(url_for("browse"))
     return render_template("userSignUp.html")
@@ -716,8 +730,13 @@ def owner_sign_up():
             paypal=paypal
             ,avatar=avatar_path
         )
-        db.session.add(owner)
-        db.session.commit()
+        try:
+            db.session.add(owner)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Owner registration failed: {e}", "danger")
+            return redirect(url_for("owner_sign_up"))
         flash("Owner registration successful! Please log in.", "success")
         return redirect(url_for("home"))
     return render_template("ownerSignUp.html")

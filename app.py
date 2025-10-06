@@ -180,6 +180,25 @@ def user_profile():
         }
     return render_template("user/profile.html", user=user_data)
 
+@app.route("/user/bookings")
+def user_bookings():
+    return render_template('user/bookings.html')
+
+@app.route('/user/chats')
+def user_chats():
+    # Render the user chats page. In the future attach the user's chat list.
+    if 'user_id' not in session:
+        return redirect(url_for('home'))
+    return render_template('user/chats.html')
+
+
+@app.route('/owner/chats')
+def owner_chats():
+    # Render the owner chats page (owner must be logged in)
+    if 'owner_id' not in session:
+        return redirect(url_for('home'))
+    return render_template('owner/chats.html')
+
 
 @app.route("/owner/profile")
 def owner_profile():

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookings</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            height: 100vh;
+            background: #CCFED8;
+            background: linear-gradient(90deg, rgba(204, 254, 216, 1) 0%, rgba(148, 185, 255, 1) 100%);
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 10vh;
+            padding: 0 100px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+        .nav-links a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+        .content {
+            display: flex;
+            width: 100%;
+            height: 90vh;
+            padding: 30px 40px;
+        }
+        .main {
+            background-color: #fff;
+            width: 100%;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            height: 100%;
+        }
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .profile-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2193b0;
+        }
+        .profile-box {
+            display: flex;
+            flex-direction: row;
+            gap: 40px;
+            height: 100%;
+        }
+        .profile-container {
+            background: linear-gradient(135deg, #f5faff 0%, #e3f0ff 100%);
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 32px 24px;
+            min-width: 260px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #e3f0ff url('https://via.placeholder.com/100') center/cover no-repeat;
+            border: 2px solid #2193b0;
+            margin-bottom: 16px;
+        }
+        .profile-username {
+            color: #888;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        .modern-button {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 0.6rem 1.6rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .user-information {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 28px 18px;
+            min-width: 340px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px 32px;
+            align-items: stretch;
+            height: 100%;
+        }
+        .user-information > div {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            height: 100%;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #2193b0;
+            margin-bottom: 2px;
+            font-size: 0.98rem;
+        }
+        .info-value {
+            color: #333;
+            margin-bottom: 18px;
+            font-size: 0.97rem;
+            word-break: break-word;
+        }
+        /* Bookings-specific styles */
+        .bookings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 16px;
+        }
+        .filters {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .filter-btn {
+            background: #f1f7ff;
+            border: 1px solid #d7e7ff;
+            color: #2b6ca3;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .bookings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            margin-top: 8px;
+            width: 100%;
+        }
+        .booking-card {
+            display: flex;
+            flex-direction: row;
+            gap: 14px;
+            padding: 16px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+            box-shadow: 0 6px 20px rgba(33,147,176,0.06);
+            align-items: center;
+            width: 100%;
+        }
+        .booking-img {
+            width: 120px;
+            height: 90px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 2px solid #eef7ff;
+        }
+        .booking-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .resort-name {
+            font-weight: 700;
+            color: #11557c;
+            font-size: 1.05rem;
+        }
+        .booking-meta {
+            color: #5b7186;
+            font-size: 0.95rem;
+        }
+        .booking-footer {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 8px;
+        }
+        .badge {
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.82rem;
+            display: inline-block;
+        }
+        .badge.confirmed { background: #e6ffef; color: #0b7a43; border: 1px solid #c9f5d9; }
+        .badge.pending { background: #fff7e6; color: #a65a00; border: 1px solid #ffe8b8; }
+        .badge.cancelled { background: #fff0f0; color: #a50b0b; border: 1px solid #ffd6d6; }
+        .card-actions button {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .view-btn { background: linear-gradient(90deg,#2193b0 0%, #6dd5ed 100%); color: #fff; }
+        .cancel-btn { background: #fff; border: 1px solid #ffd6d6; color: #a50b0b; }
+    </style>
+</head>
+<body>
+    {% if session.user_id %}
+        {% include 'partials/navbarLoggedInCustomer.html' %}
+    {% elif session.owner_id %}
+        {% include 'partials/navbarLoggedInOwner.html' %}
+    {% else %}
+        {% include 'partials/navbar.html' %}
+    {% endif %}
+    <div class="content">
+
+        {% include 'partials/user_sidebar.html' %}
+
+        <div class="main">
+            <div class="profile-header bookings-header">
+                <div>
+                    <div class="profile-title">Your Bookings</div>
+                    <div style="color:#6b7990; margin-top:6px;">Here are your recent reservations — manage or review details below.</div>
+                </div>
+                <div class="filters">
+                    <button class="filter-btn">All</button>
+                    <button class="filter-btn">Upcoming</button>
+                    <button class="filter-btn">Past</button>
+                    <button class="filter-btn">Cancelled</button>
+                </div>
+            </div>
+
+            <div class="bookings-list">
+                <!-- Booking 1 -->
+                <div class="booking-card">
+                    <img class="booking-img" src="/static/uploads/triple-room-bohol-sunside-philippines_1_16966b5f48c14d3baed947fb9ecb75d7_2.jpg" alt="Resort image">
+                    <div class="booking-info">
+                        <div class="resort-name">Bohol Sunside Resort — Triple Room</div>
+                        <div class="booking-meta">2 guests • 3 nights • Room: Triple • Booking ref: <strong>#661A655</strong></div>
+                        <div class="booking-meta">Check-in: <strong>2025-11-12</strong> — Check-out: <strong>2025-11-15</strong></div>
+                        <div class="booking-footer">
+                            <span class="badge confirmed">Confirmed</span>
+                            <div class="card-actions" style="margin-left:auto; display:flex; gap:8px;">
+                                <button class="view-btn">View</button>
+                                <button class="cancel-btn">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking 2 -->
+                <div class="booking-card">
+                    <img class="booking-img" src="/static/uploads/standard-triple-room-bohol-sunside_1_15021fce92f8486bacbf1c5f859938c9_1.jpg" alt="Resort image">
+                    <div class="booking-info">
+                        <div class="resort-name">Sunside Standard Triple — Ocean View</div>
+                        <div class="booking-meta">4 guests • 2 nights • Room: Standard Triple • Booking ref: <strong>#EC-CL-234</strong></div>
+                        <div class="booking-meta">Check-in: <strong>2025-09-01</strong> — Check-out: <strong>2025-09-03</strong></div>
+                        <div class="booking-footer">
+                            <span class="badge pending">Pending Payment</span>
+                            <div class="card-actions" style="margin-left:auto; display:flex; gap:8px;">
+                                <button class="view-btn">Pay / View</button>
+                                <button class="cancel-btn">Contact</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking 3 -->
+                <div class="booking-card">
+                    <img class="booking-img" src="/static/uploads/tongo-hill-cottages_1_6daf3e9cb02f4ab794a809a5e2c168ff_1.jpg" alt="Resort image">
+                    <div class="booking-info">
+                        <div class="resort-name">Tongo Hill Cottages — Garden Cottage</div>
+                        <div class="booking-meta">1 guest • 1 night • Booking ref: <strong>#TNG-901</strong></div>
+                        <div class="booking-meta">Check-in: <strong>2025-06-20</strong> — Check-out: <strong>2025-06-21</strong></div>
+                        <div class="booking-footer">
+                            <span class="badge cancelled">Cancelled</span>
+                            <div class="card-actions" style="margin-left:auto; display:flex; gap:8px;">
+                                <button class="view-btn">View</button>
+                                <button class="cancel-btn">Rebook</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

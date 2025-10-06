@@ -232,7 +232,7 @@
                         {%- set avatar_url = 'https://via.placeholder.com/100' -%}
                     {%- endif -%}
                     <div class="profile-img" style="background-image: url('{{ avatar_url }}'); background-size: cover; background-position: center"></div>
-                    <h2>{{ user.name }}</h2>
+                    <h2 style="text-align: center;">{{ user.name }}</h2>
                     <div class="profile-username">@{{ user.username }}</div>
                     {% if user.resort_name %}
                         <div style="margin-top:8px;color:#555;font-weight:600;">Resort: {{ user.resort_name }}</div>

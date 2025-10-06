@@ -132,13 +132,74 @@
     <p>Chats</p>
   </a>
   <div style="flex: 1"></div>
-  <form action="{{ url_for('logout') }}" method="get" style="width: 90%">
+  <form id="logoutForm" action="{{ url_for('logout') }}" method="get" style="width: 90%">
     <button
-      type="submit"
+      id="logoutBtn"
+      type="button"
       class="modern-button"
       style="width: 100%; margin-top: 20px"
     >
       Logout
     </button>
   </form>
+
+  <!-- Logout confirmation modal -->
+  <div id="logoutModal" style="display:none; position:fixed; inset:0; z-index:9999;">
+    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.45);"></div>
+    <div style="position:relative; max-width:420px; margin:80px auto; background:#fff; border-radius:12px; padding:20px; box-shadow:0 8px 36px rgba(0,0,0,0.24); z-index:10000;">
+      <h3 style="margin:0 0 10px 0; color:#222;">Confirm logout</h3>
+      <p style="margin:0 0 18px 0; color:#444;">Are you sure you want to log out?</p>
+      <div style="display:flex; gap:12px; justify-content:flex-end;">
+        <button id="logoutCancel" type="button" style="background:#f3f4f6; border:none; padding:8px 14px; border-radius:8px; cursor:pointer;">Cancel</button>
+        <button id="logoutConfirm" type="button" style="background:#e53935; color:#fff; border:none; padding:8px 14px; border-radius:8px; cursor:pointer;">Confirm</button>
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var logoutBtn = document.getElementById('logoutBtn');
+    var logoutModal = document.getElementById('logoutModal');
+    var logoutCancel = document.getElementById('logoutCancel');
+    var logoutConfirm = document.getElementById('logoutConfirm');
+    var logoutForm = document.getElementById('logoutForm');
+
+    if (!logoutBtn || !logoutModal) return;
+
+    // Open modal when logout button is clicked
+    logoutBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      logoutModal.style.display = 'block';
+      // focus the cancel button for accessibility
+      logoutCancel && logoutCancel.focus();
+    });
+
+    // Cancel closes modal
+    logoutCancel && logoutCancel.addEventListener('click', function () {
+      logoutModal.style.display = 'none';
+    });
+
+    // Click outside modal content closes it
+    logoutModal.addEventListener('click', function (e) {
+      if (e.target === logoutModal) {
+        logoutModal.style.display = 'none';
+      }
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        if (logoutModal.style.display === 'block') {
+          logoutModal.style.display = 'none';
+        }
+      }
+    });
+
+    // Confirm submits the form
+    logoutConfirm && logoutConfirm.addEventListener('click', function () {
+      // Submit the form (preserves GET as before)
+      logoutForm && logoutForm.submit();
+    });
+  });
+</script>

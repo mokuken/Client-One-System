@@ -355,7 +355,7 @@
                             {% if room.other_feature5 %}<h4>{{ room.other_feature5 }}</h4>{% endif %}
                         </div>
                     </div>
-                    <button class="check-date-btn">Check Date</button>
+                    <button class="check-date-btn" data-resource-type="room" data-resource-id="{{ room.id }}" data-owner-id="{{ owner.id if owner else room.owner_id }}">Check Date</button>
                 </div>
             {% endfor %}
         {% else %}
@@ -364,18 +364,20 @@
     </div>
 </body>
 <script>
-// Calendar logic
-const unavailableDates = [1, 4, 12, 15, 16, 17, 18, 19]; // Example unavailable days in April 2025
+// Calendar logic with month navigation and server-side confirmed reservations marking
+let unavailableDates = []; // will be filled from server for current month
 const today = new Date();
-const currentYear = 2025;
-const currentMonth = 3; // April (0-indexed)
+let currentYear = today.getFullYear();
+let currentMonth = today.getMonth(); // 0-indexed month
 
 function renderCalendar(containerId, selectedRange, isCheckIn) {
-    const daysInMonth = 30;
+    const daysInMonth = new Date(currentYear, currentMonth+1, 0).getDate();
     const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-    let html = '<table style="width:100%; border-collapse:collapse; background:transparent;">';
+    let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
+        + `<button class="nav-btn" data-dir="-1">‹</button><div style="font-weight:700;">${currentYear} - ${currentMonth+1}</div><button class="nav-btn" data-dir="1">›</button></div>`;
+    html += '<table style="width:100%; border-collapse:collapse; background:transparent;">';
     html += '<tr>';
-    ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].forEach(d => {
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => {
         html += `<th style='padding:6px; color:#234; background:#e3f2fd;'>${d}</th>`;
     });
     html += '</tr><tr>';
@@ -395,17 +397,32 @@ function renderCalendar(containerId, selectedRange, isCheckIn) {
     }
     html += '</table>';
     document.getElementById(containerId).innerHTML = html;
+
+    // attach nav handlers
+    document.querySelectorAll('#'+containerId+' .nav-btn').forEach(b=>{
+        b.onclick = function(){
+            const dir = parseInt(b.getAttribute('data-dir'));
+            currentMonth += dir;
+            if(currentMonth < 0){ currentMonth = 11; currentYear--; }
+            if(currentMonth > 11){ currentMonth = 0; currentYear++; }
+            // refresh unavailableDates from server then re-render
+            fetchUnavailableDatesAndRender();
+        }
+    });
 }
 
 function dayCell(day, selectedRange, isCheckIn) {
-    const unavailable = unavailableDates.includes(day);
+    // check if day is unavailable from server list (dates are 'YYYY-MM-DD')
+    const dateIso = new Date(currentYear, currentMonth, day).toISOString().slice(0,10);
+    const unavailable = unavailableDates.includes(dateIso);
     let style = 'padding:8px; text-align:center; border-radius:8px; cursor:pointer; font-weight:bold;';
     let bg = '';
     let color = unavailable ? '#fff' : '#222';
     if(unavailable) bg = 'background:#e57373;';
     else if(selectedRange && selectedRange.includes(day)) bg = 'background:#b3e5fc;';
     else if(isToday(day)) bg = 'background:#81c784;';
-    return `<td style='${style}${bg}color:${color};' ${unavailable ? '' : `onclick='selectDate(${day},${isCheckIn})'`}>
+    const clickable = !unavailable;
+    return `<td style='${style}${bg}color:${color};' ${clickable ? `onclick='selectDate(${day},${isCheckIn})'` : ''}>
         ${day}
     </td>`;
 }
@@ -416,6 +433,7 @@ function isToday(day) {
 
 let selectedCheckIn = null;
 let selectedCheckOut = null;
+let reservingResource = null; // {type, id, owner_id}
 
 function selectDate(day, isCheckIn) {
     if(isCheckIn) {
@@ -441,20 +459,74 @@ function selectDate(day, isCheckIn) {
 // Modal logic
 document.querySelectorAll('.check-date-btn').forEach(btn => {
     btn.onclick = function() {
+        // store resource info for reservation
+        reservingResource = {
+            type: btn.getAttribute('data-resource-type'),
+            id: btn.getAttribute('data-resource-id'),
+            owner_id: btn.getAttribute('data-owner-id')
+        };
+        // show modal and render calendar for current month
         document.getElementById('calendarModal').style.display = 'flex';
         selectedCheckIn = null;
         selectedCheckOut = null;
-        renderCalendar('calendarCheckIn', [], true);
-        renderCalendar('calendarCheckOut', [], false);
+        fetchUnavailableDatesAndRender();
     };
 });
+
+function fetchUnavailableDatesAndRender(){
+    // request confirmed reservations for owner/resource for current month
+    if(!reservingResource || !reservingResource.owner_id) {
+        unavailableDates = [];
+        renderCalendar('calendarCheckIn', [], true);
+        renderCalendar('calendarCheckOut', [], false);
+        return;
+    }
+    const params = new URLSearchParams({
+        owner_id: reservingResource.owner_id,
+        resource_type: reservingResource.type,
+        resource_id: reservingResource.id,
+        month: (currentMonth+1).toString(),
+        year: currentYear.toString()
+    });
+    fetch('/api/confirmed_reservations?' + params.toString()).then(r=>r.json()).then(j=>{
+        if(j.success){
+            unavailableDates = j.dates || [];
+        } else {
+            unavailableDates = [];
+        }
+        renderCalendar('calendarCheckIn', selectedCheckIn? [selectedCheckIn]: [], true);
+        renderCalendar('calendarCheckOut', selectedCheckOut? (Array.isArray(selectedCheckOut)? selectedCheckOut: [selectedCheckOut]) : [], false);
+    }).catch(e=>{ unavailableDates = []; renderCalendar('calendarCheckIn', [], true); renderCalendar('calendarCheckOut', [], false); });
+}
 // Confirm and Cancel button logic
 document.getElementById('calendar-cancel').onclick = function() {
     document.getElementById('calendarModal').style.display = 'none';
 };
 document.getElementById('calendar-confirm').onclick = function() {
     if(selectedCheckIn && selectedCheckOut) {
-        alert('Booking from April ' + selectedCheckIn + ' to April ' + selectedCheckOut);
+        if(!reservingResource){ alert('No resource selected'); return; }
+        // build ISO dates for April 2025
+        const ci = new Date(2025,3,selectedCheckIn).toISOString().slice(0,10);
+        const co = new Date(2025,3,selectedCheckOut).toISOString().slice(0,10);
+        fetch('/api/reserve', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+                resource_type: reservingResource.type,
+                resource_id: reservingResource.id,
+                owner_id: reservingResource.owner_id,
+                check_in: ci,
+                check_out: co,
+                guests: 1
+            })
+        }).then(r=>r.json()).then(j=>{
+            if(j.success){
+                alert('Reservation created. Status: ' + j.status);
+                location.reload();
+            } else {
+                alert(j.message || 'Failed to create reservation');
+            }
+        }).catch(e=>{alert('Error: '+e)});
         document.getElementById('calendarModal').style.display = 'none';
     } else {
         alert('Please select a valid check-in and check-out date.');

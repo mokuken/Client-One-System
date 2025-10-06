@@ -223,38 +223,53 @@
             <div class="profile-header">
                 <span class="profile-title">Customer Reservations</span>
             </div>
-            <div class="reservations-list" style="width:100%;">
-                <!-- Example reservation items, replace with dynamic data as needed -->
-                <div class="reservation-card" style="background:linear-gradient(135deg,#f5faff 0%,#e3f0ff 100%);border-radius:14px;box-shadow:0 2px 12px rgba(33,147,176,0.08);padding:22px 18px;margin-bottom:18px;display:flex;flex-direction:column;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <span style="font-weight:bold;color:#2193b0;font-size:1.15rem;">Room Reservation</span>
-                        <span style="color:#888;font-size:0.98rem;">Customer: John Doe</span>
-                    </div>
-                    <div style="margin-top:8px;color:#333;font-size:0.97rem;">Room: Deluxe Suite<br>Date: 2025-09-10<br>Status: Confirmed</div>
-                </div>
-                <div class="reservation-card" style="background:linear-gradient(135deg,#f5faff 0%,#e3f0ff 100%);border-radius:14px;box-shadow:0 2px 12px rgba(33,147,176,0.08);padding:22px 18px;margin-bottom:18px;display:flex;flex-direction:column;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <span style="font-weight:bold;color:#2193b0;font-size:1.15rem;">Cottage Reservation</span>
-                        <span style="color:#888;font-size:0.98rem;">Customer: Jane Smith</span>
-                    </div>
-                    <div style="margin-top:8px;color:#333;font-size:0.97rem;">Cottage: Beachfront Hut<br>Date: 2025-09-12<br>Status: Pending</div>
-                </div>
-                <div class="reservation-card" style="background:linear-gradient(135deg,#f5faff 0%,#e3f0ff 100%);border-radius:14px;box-shadow:0 2px 12px rgba(33,147,176,0.08);padding:22px 18px;margin-bottom:18px;display:flex;flex-direction:column;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <span style="font-weight:bold;color:#2193b0;font-size:1.15rem;">Food Reservation</span>
-                        <span style="color:#888;font-size:0.98rem;">Customer: Mark Lee</span>
-                    </div>
-                    <div style="margin-top:8px;color:#333;font-size:0.97rem;">Food: Seafood Platter<br>Date: 2025-09-15<br>Status: Served</div>
-                </div>
-                <div class="reservation-card" style="background:linear-gradient(135deg,#f5faff 0%,#e3f0ff 100%);border-radius:14px;box-shadow:0 2px 12px rgba(33,147,176,0.08);padding:22px 18px;margin-bottom:18px;display:flex;flex-direction:column;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <span style="font-weight:bold;color:#2193b0;font-size:1.15rem;">Activity Reservation</span>
-                        <span style="color:#888;font-size:0.98rem;">Customer: Lisa Wong</span>
-                    </div>
-                    <div style="margin-top:8px;color:#333;font-size:0.97rem;">Activity: Island Hopping<br>Date: 2025-09-18<br>Status: Booked</div>
-                </div>
+            <div class="reservations-list" id="reservationsList" style="width:100%;">
+                {% if reservations and reservations|length > 0 %}
+                    {% for r in reservations %}
+                        <div class="reservation-card" data-reservation-id="{{ r.id }}" style="background:linear-gradient(135deg,#f5faff 0%,#e3f0ff 100%);border-radius:14px;box-shadow:0 2px 12px rgba(33,147,176,0.08);padding:22px 18px;margin-bottom:18px;display:flex;flex-direction:column;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <span style="font-weight:bold;color:#2193b0;font-size:1.15rem;">{{ r.title }}</span>
+                                <span style="color:#888;font-size:0.98rem;">Customer: {{ r.user_name }}</span>
+                            </div>
+                            <div style="margin-top:8px;color:#333;font-size:0.97rem;">Date: {{ r.check_in }} to {{ r.check_out }}<br>Status: <strong id="status-{{ r.id }}">{{ r.status|capitalize }}</strong></div>
+                            <div style="margin-top:10px; display:flex; gap:10px;">
+                                {% if r.status != 'confirmed' %}
+                                    <button class="owner-action-btn" data-reservation-id="{{ r.id }}" data-action="confirm" style="background:#2193b0;color:#fff;padding:8px 12px;border-radius:8px;border:none;">Confirm</button>
+                                {% endif %}
+                                {% if r.status != 'cancelled' %}
+                                    <button class="owner-action-btn" data-reservation-id="{{ r.id }}" data-action="cancel" style="background:#fff;border:1px solid #ffd6d6;color:#a50b0b;padding:8px 12px;border-radius:8px;">Cancel</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="width:100%; text-align:center; padding:24px;">No reservations yet.</div>
+                {% endif %}
             </div>
         </div>
     </div>
+<script>
+function ownerAction(id, action){
+    if(!confirm(action + ' reservation?')) return;
+    fetch('/api/owner/reservations/' + id + '/action', {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({action: action})
+    }).then(r=>r.json()).then(j=>{
+        if(j.success){
+            document.getElementById('status-'+id).innerText = j.status.charAt(0).toUpperCase() + j.status.slice(1);
+        } else alert(j.message || 'Failed');
+    });
+}
+</script>
+<script>
+document.querySelectorAll('.owner-action-btn').forEach(btn=>{
+    btn.addEventListener('click', function(){
+        const id = btn.getAttribute('data-reservation-id');
+        const action = btn.getAttribute('data-action');
+        if(!confirm(action + ' reservation?')) return;
+        fetch('/api/owner/reservations/' + id + '/action', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action: action})})
+        .then(r=>r.json()).then(j=>{ if(j.success) document.getElementById('status-'+id).innerText = j.status.charAt(0).toUpperCase() + j.status.slice(1); else alert(j.message||'Failed'); });
+    });
+});
+</script>
 </body>
 </html>

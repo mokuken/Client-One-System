@@ -177,6 +177,22 @@ class Message(db.Model):
     sender_owner = db.relationship('Owner', foreign_keys=[sender_owner_id])
 
 
+class Reservation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
+    resource_type = db.Column(db.String(30), nullable=False)  # 'room' or 'cottage'
+    resource_id = db.Column(db.Integer, nullable=False)
+    check_in = db.Column(db.Date)
+    check_out = db.Column(db.Date)
+    guests = db.Column(db.String(50))
+    status = db.Column(db.String(30), default='pending')  # pending, confirmed, cancelled
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref=db.backref('reservations', lazy=True))
+    owner = db.relationship('Owner', backref=db.backref('reservations', lazy=True))
+
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -227,7 +243,38 @@ def user_profile():
 
 @app.route("/user/bookings")
 def user_bookings():
-    return render_template('user/bookings.html')
+    # fetch reservations for logged-in user
+    if 'user_id' not in session:
+        flash('You must be logged in to view your bookings.', 'danger')
+        return redirect(url_for('home'))
+    resvs = Reservation.query.filter_by(user_id=session['user_id']).order_by(Reservation.created_at.desc()).all()
+    bookings = []
+    for r in resvs:
+        title = ''
+        img = None
+        if r.resource_type == 'room':
+            room = Room.query.get(r.resource_id)
+            if room:
+                title = f"{room.name}"
+                img = room.image1 or room.image2 or room.image3
+        elif r.resource_type == 'cottage':
+            c = Cottage.query.get(r.resource_id)
+            if c:
+                title = f"{c.name}"
+                img = c.image1 or c.image2 or c.image3
+        bookings.append({
+            'id': r.id,
+            'resource_type': r.resource_type,
+            'title': title,
+            'img': img,
+            'guests': r.guests,
+            'check_in': r.check_in.isoformat() if r.check_in else None,
+            'check_out': r.check_out.isoformat() if r.check_out else None,
+            'status': r.status,
+            'owner_id': r.owner_id,
+            'resource_id': r.resource_id,
+        })
+    return render_template('user/bookings.html', bookings=bookings)
 
 @app.route('/user/chats')
 def user_chats():
@@ -340,7 +387,32 @@ def owner_dashboard():
 
 @app.route("/owner/reservations")
 def owner_reservations():
-    return render_template("owner/reservations.html")
+    # owner must be logged in
+    if 'owner_id' not in session:
+        flash('You must be logged in as owner to view reservations.', 'danger')
+        return redirect(url_for('home'))
+    resvs = Reservation.query.filter_by(owner_id=session['owner_id']).order_by(Reservation.created_at.desc()).all()
+    reservations = []
+    for r in resvs:
+        user = User.query.get(r.user_id)
+        title = ''
+        if r.resource_type == 'room':
+            room = Room.query.get(r.resource_id)
+            title = room.name if room else 'Room'
+        else:
+            c = Cottage.query.get(r.resource_id)
+            title = c.name if c else 'Cottage'
+        reservations.append({
+            'id': r.id,
+            'user_name': user.name if user else 'Customer',
+            'user_id': r.user_id,
+            'title': title,
+            'check_in': r.check_in.isoformat() if r.check_in else None,
+            'check_out': r.check_out.isoformat() if r.check_out else None,
+            'guests': r.guests,
+            'status': r.status,
+        })
+    return render_template("owner/reservations.html", reservations=reservations)
 
 @app.route("/owner/rooms", methods=["GET","POST"]) 
 def owner_rooms():
@@ -1205,6 +1277,179 @@ def api_send_message(conv_id):
     db.session.commit()
 
     return jsonify({'success': True, 'message_id': m.id, 'created_at': m.created_at.isoformat()})
+
+
+@app.route('/api/reserve', methods=['POST'])
+def api_reserve():
+    """Create a reservation. Expects JSON with: resource_type, resource_id, owner_id, check_in, check_out, guests"""
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Login required'}), 401
+    data = request.get_json() or {}
+    resource_type = (data.get('resource_type') or '').lower()
+    resource_id = data.get('resource_id')
+    owner_id = data.get('owner_id')
+    check_in = data.get('check_in')
+    check_out = data.get('check_out')
+    guests = data.get('guests')
+
+    if resource_type not in ('room', 'cottage'):
+        return jsonify({'success': False, 'message': 'Invalid resource_type'}), 400
+    if not resource_id or not owner_id or not check_in or not check_out:
+        return jsonify({'success': False, 'message': 'Missing fields'}), 400
+    try:
+        check_in_date = datetime.fromisoformat(check_in).date()
+        check_out_date = datetime.fromisoformat(check_out).date()
+    except Exception:
+        return jsonify({'success': False, 'message': 'Invalid date format, use YYYY-MM-DD'}), 400
+    if check_out_date <= check_in_date:
+        return jsonify({'success': False, 'message': 'check_out must be after check_in'}), 400
+
+    # Basic conflict check: ensure no existing confirmed reservation overlaps for same resource
+    overlaps = Reservation.query.filter(
+        Reservation.resource_type == resource_type,
+        Reservation.resource_id == resource_id,
+        Reservation.status == 'confirmed',
+        Reservation.check_in <= check_out_date,
+        Reservation.check_out >= check_in_date,
+    ).count()
+    if overlaps > 0:
+        return jsonify({'success': False, 'message': 'Selected dates are not available'}), 409
+
+    r = Reservation(
+        user_id=session['user_id'],
+        owner_id=owner_id,
+        resource_type=resource_type,
+        resource_id=resource_id,
+        check_in=check_in_date,
+        check_out=check_out_date,
+        guests=guests,
+        status='pending'
+    )
+    db.session.add(r)
+    db.session.commit()
+    return jsonify({'success': True, 'reservation_id': r.id, 'status': r.status})
+
+
+@app.route('/api/owner/reservations/<int:reservation_id>/action', methods=['POST'])
+def api_owner_reservation_action(reservation_id):
+    # owner-only: action in JSON { action: 'confirm'|'cancel' }
+    if 'owner_id' not in session:
+        return jsonify({'success': False, 'message': 'Owner login required'}), 401
+    r = Reservation.query.get(reservation_id)
+    if not r or r.owner_id != session['owner_id']:
+        return jsonify({'success': False, 'message': 'Reservation not found or not authorized'}), 404
+    data = request.get_json() or {}
+    action = (data.get('action') or '').lower()
+    if action == 'confirm':
+        # ensure no confirmed overlap
+        overlaps = Reservation.query.filter(
+            Reservation.id != r.id,
+            Reservation.resource_type == r.resource_type,
+            Reservation.resource_id == r.resource_id,
+            Reservation.status == 'confirmed',
+            Reservation.check_in <= r.check_out,
+            Reservation.check_out >= r.check_in,
+        ).count()
+        if overlaps > 0:
+            return jsonify({'success': False, 'message': 'Conflicting confirmed reservation exists'}), 409
+        r.status = 'confirmed'
+    elif action == 'cancel':
+        r.status = 'cancelled'
+    else:
+        return jsonify({'success': False, 'message': 'Invalid action'}), 400
+    db.session.commit()
+    return jsonify({'success': True, 'status': r.status})
+
+
+@app.route('/api/confirmed_reservations', methods=['GET'])
+def api_confirmed_reservations():
+    """Return list of confirmed reservation dates for an owner/resource in a given month.
+    Query params: owner_id, resource_type (optional), resource_id (optional), month (1-12), year
+    Response: { success: True, dates: ['YYYY-MM-DD', ...] }
+    """
+    owner_id = request.args.get('owner_id')
+    resource_type = request.args.get('resource_type')
+    resource_id = request.args.get('resource_id')
+    try:
+        month = int(request.args.get('month') or 0)
+        year = int(request.args.get('year') or 0)
+    except Exception:
+        return jsonify({'success': False, 'message': 'Invalid month/year'}), 400
+    if not owner_id:
+        return jsonify({'success': False, 'message': 'owner_id required'}), 400
+
+    # build base query
+    q = Reservation.query.filter_by(owner_id=owner_id, status='confirmed')
+    if resource_type:
+        q = q.filter(Reservation.resource_type == resource_type)
+    if resource_id:
+        q = q.filter(Reservation.resource_id == resource_id)
+
+    results = q.all()
+
+    # compute first and last day of month
+    from calendar import monthrange
+    from datetime import timedelta
+    try:
+        first_day = datetime(year, month, 1).date()
+    except Exception:
+        return jsonify({'success': False, 'message': 'Invalid month/year combination'}), 400
+    last_day = datetime(year, month, monthrange(year, month)[1]).date()
+
+    dates = set()
+    for r in results:
+        # if reservation overlaps the month
+        if not r.check_in or not r.check_out:
+            continue
+        if r.check_out < first_day or r.check_in > last_day:
+            continue
+        # overlap -> enumerate dates within the overlap range
+        start = max(r.check_in, first_day)
+        end = min(r.check_out, last_day)
+        d = start
+        while d <= end:
+            dates.add(d.isoformat())
+            d = d + timedelta(days=1)
+
+    return jsonify({'success': True, 'dates': sorted(list(dates))})
+
+
+@app.route('/api/user/reservations', methods=['GET'])
+def api_user_reservations():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Login required'}), 401
+    resvs = Reservation.query.filter_by(user_id=session['user_id']).order_by(Reservation.created_at.desc()).all()
+    out = []
+    for r in resvs:
+        out.append({
+            'id': r.id,
+            'resource_type': r.resource_type,
+            'resource_id': r.resource_id,
+            'check_in': r.check_in.isoformat() if r.check_in else None,
+            'check_out': r.check_out.isoformat() if r.check_out else None,
+            'guests': r.guests,
+            'status': r.status,
+            'owner_id': r.owner_id,
+        })
+    return jsonify({'success': True, 'reservations': out})
+
+
+@app.route('/api/user/reservations/<int:reservation_id>/action', methods=['POST'])
+def api_user_reservation_action(reservation_id):
+    # user-only actions like cancel
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Login required'}), 401
+    r = Reservation.query.get(reservation_id)
+    if not r or r.user_id != session['user_id']:
+        return jsonify({'success': False, 'message': 'Reservation not found or not authorized'}), 404
+    data = request.get_json() or {}
+    action = (data.get('action') or '').lower()
+    if action == 'cancel':
+        r.status = 'cancelled'
+    else:
+        return jsonify({'success': False, 'message': 'Invalid action'}), 400
+    db.session.commit()
+    return jsonify({'success': True, 'status': r.status})
 
 
 @app.route('/api/recent_conversations', methods=['GET'])

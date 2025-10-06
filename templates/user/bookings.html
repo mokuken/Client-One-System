@@ -242,59 +242,83 @@
                 </div>
             </div>
 
-            <div class="bookings-list">
-                <!-- Booking 1 -->
-                <div class="booking-card">
-                    <img class="booking-img" src="/static/uploads/triple-room-bohol-sunside-philippines_1_16966b5f48c14d3baed947fb9ecb75d7_2.jpg" alt="Resort image">
-                    <div class="booking-info">
-                        <div class="resort-name">Bohol Sunside Resort — Triple Room</div>
-                        <div class="booking-meta">2 guests • 3 nights • Room: Triple • Booking ref: <strong>#661A655</strong></div>
-                        <div class="booking-meta">Check-in: <strong>2025-11-12</strong> — Check-out: <strong>2025-11-15</strong></div>
-                        <div class="booking-footer">
-                            <span class="badge confirmed">Confirmed</span>
-                            <div class="card-actions" style="margin-left:auto; display:flex; gap:8px;">
-                                <button class="view-btn">View</button>
-                                <button class="cancel-btn">Cancel</button>
+            <div class="bookings-list" id="bookingsList">
+                {% if bookings and bookings|length > 0 %}
+                    {% for b in bookings %}
+                        <div class="booking-card" data-reservation-id="{{ b.id }}">
+                            {% if b.img %}
+                                <img class="booking-img" src="{{ url_for('static', filename=b.img) }}" alt="Resort image">
+                            {% else %}
+                                <img class="booking-img" src="/static/images/bg.webp" alt="Resort image">
+                            {% endif %}
+                            <div class="booking-info">
+                                <div class="resort-name">{{ b.title }}</div>
+                                <div class="booking-meta">{{ b.guests or '1 guest' }} • Booking ref: <strong>#{{ b.id }}</strong></div>
+                                <div class="booking-meta">Check-in: <strong>{{ b.check_in }}</strong> — Check-out: <strong>{{ b.check_out }}</strong></div>
+                                <div class="booking-footer">
+                                    <span class="badge {{ 'confirmed' if b.status=='confirmed' else ('cancelled' if b.status=='cancelled' else 'pending') }}">{{ b.status|capitalize }}</span>
+                                    <div class="card-actions" style="margin-left:auto; display:flex; gap:8px;">
+                                        <button class="view-btn" data-reservation-id="{{ b.id }}" data-action="view">View</button>
+                                        {% if b.status != 'cancelled' %}
+                                            <button class="cancel-btn" data-reservation-id="{{ b.id }}" data-action="cancel">Cancel</button>
+                                        {% else %}
+                                            <button class="cancel-btn" data-resource-id="{{ b.resource_id }}" data-resource-type="{{ b.resource_type }}" data-owner-id="{{ b.owner_id }}" data-action="rebook">Rebook</button>
+                                        {% endif %}
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Booking 2 -->
-                <div class="booking-card">
-                    <img class="booking-img" src="/static/uploads/standard-triple-room-bohol-sunside_1_15021fce92f8486bacbf1c5f859938c9_1.jpg" alt="Resort image">
-                    <div class="booking-info">
-                        <div class="resort-name">Sunside Standard Triple — Ocean View</div>
-                        <div class="booking-meta">4 guests • 2 nights • Room: Standard Triple • Booking ref: <strong>#EC-CL-234</strong></div>
-                        <div class="booking-meta">Check-in: <strong>2025-09-01</strong> — Check-out: <strong>2025-09-03</strong></div>
-                        <div class="booking-footer">
-                            <span class="badge pending">Pending Payment</span>
-                            <div class="card-actions" style="margin-left:auto; display:flex; gap:8px;">
-                                <button class="view-btn">Pay / View</button>
-                                <button class="cancel-btn">Contact</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Booking 3 -->
-                <div class="booking-card">
-                    <img class="booking-img" src="/static/uploads/tongo-hill-cottages_1_6daf3e9cb02f4ab794a809a5e2c168ff_1.jpg" alt="Resort image">
-                    <div class="booking-info">
-                        <div class="resort-name">Tongo Hill Cottages — Garden Cottage</div>
-                        <div class="booking-meta">1 guest • 1 night • Booking ref: <strong>#TNG-901</strong></div>
-                        <div class="booking-meta">Check-in: <strong>2025-06-20</strong> — Check-out: <strong>2025-06-21</strong></div>
-                        <div class="booking-footer">
-                            <span class="badge cancelled">Cancelled</span>
-                            <div class="card-actions" style="margin-left:auto; display:flex; gap:8px;">
-                                <button class="view-btn">View</button>
-                                <button class="cancel-btn">Rebook</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="width:100%; text-align:center; padding:24px;">You have no bookings yet.</div>
+                {% endif %}
             </div>
         </div>
     </div>
 </body>
+<script>
+function viewReservation(id){
+    alert('Reservation ID: ' + id);
+}
+function cancelReservation(id){
+    if(!confirm('Cancel this reservation?')) return;
+    fetch('/api/owner/reservations/' + id + '/action', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({action:'cancel'})
+    }).then(r=>r.json()).then(j=>{
+        if(j.success){
+            location.reload();
+        } else alert(j.message || 'Failed');
+    });
+}
+function rebook(resource_id, resource_type, owner_id){
+    // simple redirect to resort view so user can re-select dates
+    window.location = '/viewResort' + (resource_type=='room'? 'Room':'Cottage') + '?owner_id=' + owner_id;
+}
+</script>
+</body>
+<script>
+// delegate actions from data-action buttons
+document.querySelectorAll('[data-action]').forEach(btn=>{
+    btn.addEventListener('click', function(ev){
+        const action = btn.getAttribute('data-action');
+        if(action === 'view'){
+            const id = btn.getAttribute('data-reservation-id');
+            viewReservation(id);
+        } else if(action === 'cancel'){
+            const id = btn.getAttribute('data-reservation-id');
+            if(!confirm('Cancel this reservation?')) return;
+            fetch('/api/user/reservations/' + id + '/action', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'cancel'})})
+            .then(r=>r.json()).then(j=>{ if(j.success) location.reload(); else alert(j.message||'Failed'); });
+        } else if(action === 'rebook'){
+            const rid = btn.getAttribute('data-resource-id');
+            const rtype = btn.getAttribute('data-resource-type');
+            const oid = btn.getAttribute('data-owner-id');
+            rebook(rid, rtype, oid);
+        }
+    });
+});
+</script>
+</html>
 </html>

@@ -1207,6 +1207,57 @@ def api_send_message(conv_id):
     return jsonify({'success': True, 'message_id': m.id, 'created_at': m.created_at.isoformat()})
 
 
+@app.route('/api/recent_conversations', methods=['GET'])
+def api_recent_conversations():
+    """Return recent conversations for the currently logged-in user or owner.
+    Response: { success: True, conversations: [ { id, partner_name, partner_avatar, last_text, last_time, unread, owner_id, user_id } ] }
+    """
+    if 'user_id' not in session and 'owner_id' not in session:
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
+
+    convs = []
+    if 'user_id' in session:
+        rows = Conversation.query.filter_by(user_id=session['user_id']).order_by(Conversation.created_at.desc()).all()
+        for c in rows:
+            last_msg = c.messages[-1] if c.messages else None
+            partner_name = c.owner.resort_name if c.owner and c.owner.resort_name else (c.owner.name if c.owner else 'Owner')
+            unread = False
+            if last_msg and last_msg.sender == 'owner':
+                # treat last messages from owner as unread for the user (simple heuristic)
+                unread = True
+            convs.append({
+                'id': c.id,
+                'partner_name': partner_name,
+                'partner_avatar': c.owner.avatar if c.owner else None,
+                'last_text': last_msg.text if last_msg else None,
+                'last_time': last_msg.created_at.isoformat() if last_msg else None,
+                'unread': unread,
+                'owner_id': c.owner_id,
+                'user_id': c.user_id,
+            })
+    else:
+        rows = Conversation.query.filter_by(owner_id=session['owner_id']).order_by(Conversation.created_at.desc()).all()
+        for c in rows:
+            last_msg = c.messages[-1] if c.messages else None
+            partner_name = c.user.name if c.user and c.user.name else 'Customer'
+            unread = False
+            if last_msg and last_msg.sender == 'user':
+                # treat last messages from user as unread for the owner
+                unread = True
+            convs.append({
+                'id': c.id,
+                'partner_name': partner_name,
+                'partner_avatar': c.user.avatar if c.user else None,
+                'last_text': last_msg.text if last_msg else None,
+                'last_time': last_msg.created_at.isoformat() if last_msg else None,
+                'unread': unread,
+                'owner_id': c.owner_id,
+                'user_id': c.user_id,
+            })
+
+    return jsonify({'success': True, 'conversations': convs})
+
+
 @app.route('/viewResortRoom')
 def view_resort_room():
     owner_id = request.args.get('owner_id')

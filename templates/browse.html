@@ -310,8 +310,16 @@
                         </div>
 
                         {# activities image isn't modeled; keep fallback #}
+                        {# latest activity image #}
+                        {% set activity_img = None %}
+                        {% if owner.activities and owner.activities|length > 0 %}
+                            {% set act = owner.activities[-1] %}
+                            {% set activity_img = act.image1 or act.image2 or act.image3 or act.image4 or act.image5 %}
+                        {% endif %}
                         <div class="activities-img">
-                            {# Activities image not modeled; omit default placeholder #}
+                            {% if activity_img %}
+                                <img src="{{ url_for('static', filename=activity_img) }}" alt="Activity">
+                            {% endif %}
                         </div>
 
                         {# latest food image #}

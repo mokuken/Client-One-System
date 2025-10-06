@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            background: #CCFED8;
+            background: linear-gradient(90deg, rgba(204, 254, 216, 1) 0%, rgba(148, 185, 255, 1) 100%);
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, 'Liberation Sans', sans-serif;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 10vh;
+            padding: 0 100px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            justify-content: center ;
+        }
+
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 20px;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .search-container {
+            position: relative;
+            width: 300px;
+        }
+
+        .search {
+            width: 100%;
+            padding: 10px 40px 10px 10px; /* right padding for icon */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            fill: #888;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 0;
+            height: 90vh;
+            overflow-y: scroll;
+        }
+
+        .offer {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+            width: 1000px;
+            min-height: 300px;
+            margin-bottom: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+
+        .offer:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        }
+
+        .offer img {
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+            background: #eaeaea;
+            border-top-left-radius: 18px;
+            border-bottom-left-radius: 18px;
+            margin-right: 0;
+        }
+
+        .offer-details {
+            padding: 24px 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .offer-details h1 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #2a2a2a;
+        }
+
+        .offer-header {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+            width: 1000px;
+            min-height: 100px;
+            margin-bottom: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .offer-header img {
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+            background: #eaeaea;
+            border-top-left-radius: 18px;
+            border-bottom-left-radius: 18px;
+            margin-right: 0;
+        }
+
+        .offer-details {
+            padding: 24px 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .offer-details h1 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #2a2a2a;
+        }
+
+        .resort-header {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            width: 1000px;
+            min-height: 500px;
+            margin-bottom: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        /* .resort-resort-header:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        } */
+
+        .resort-header img {
+            width: 100%;
+            height: 300px;
+            background: #eaeaea;
+            border-top-left-radius: 18px;
+            border-bottom-left-radius: 18px;
+            margin-right: 0;
+        }
+
+        .resort-header-details {
+            padding: 24px 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .resort-header-details h1 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #2a2a2a;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .stars {
+            color: #FFD700;
+            font-size: 1.5rem;
+        }
+
+        .number-of-reviews {
+            color: #888;
+            font-size: 0.95rem;
+        }
+
+        .location {
+            color: #4a90e2;
+            font-size: 1rem;
+        }
+
+        .offer-images {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .offer-images > div {
+            width: 130px;
+            height: 130px;
+            background: #f5f5f5;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .offer-images > div img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .offer button {
+            position: absolute;
+            bottom: 24px;
+            right: 24px;
+            padding: 12px 28px;
+            background: #4a90e2;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: background 0.2s;
+        }
+        .offer button:hover {
+            background: #3578c6;
+        }
+    </style>
+</head>
+<body>
+    {% if session.user_id %}
+        {% include 'partials/navbarLoggedInCustomer.html' %}
+    {% elif session.owner_id %}
+        {% include 'partials/navbarLoggedInOwner.html' %}
+    {% else %}
+        {% include 'partials/navbar.html' %}
+    {% endif %}
+    
+    <div class="content">
+        <div class="resort-header">
+            {# show resort cover image if owner has one or fallback to placeholder #}
+            {% set cover = owner.cover_photo if owner and owner.cover_photo else None %}
+            {% if cover %}
+                <img src="{{ url_for('static', filename=cover) }}" alt="{{ owner.resort_name }}">
+            {% else %}
+                <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=500&q=80" alt="Resort">
+            {% endif %}
+            <div class="resort-header-details">
+                <h1>{{ owner.resort_name if owner and owner.resort_name else 'Resort' }}</h1>
+                <div class="rating">
+                    <div class="stars">★ ★ ★ ★ ☆</div>
+                    <div class="number-of-reviews">(120 reviews)</div>
+                </div>
+                <div class="location">
+                    {{ owner.resort_address if owner and owner.resort_address else 'Location' }}
+                    <svg style="vertical-align: middle; margin-left: 6px;" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2C7.03 2 3 6.03 3 11c0 5.25 7.05 10.74 8.09 11.52a1 1 0 0 0 1.22 0C13.95 21.74 21 16.25 21 11c0-4.97-4.03-9-9-9zm0 17.88C9.14 17.1 5 13.61 5 11c0-3.86 3.14-7 7-7s7 3.14 7 7c0 2.61-4.14 6.1-7 8.88zm0-10.38A2.38 2.38 0 1 0 12 13.88 2.38 2.38 0 0 0 12 7.5z" fill="#4a90e2"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <!-- Calendar Modal -->
+        <div id="calendarModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:1000; justify-content:center; align-items:center;">
+            <div class="modal-content" style="background:#f7f7f7; border-radius:16px; padding:32px; min-width:700px; min-height:400px; box-shadow:0 8px 32px rgba(0,0,0,0.18); position:relative; display:flex; flex-direction:row; gap:32px;">
+                <!-- Action buttons -->
+                <div id="calendar-actions" style="position:absolute; left:0; right:0; bottom:24px; display:flex; justify-content:center; gap:32px;">
+                    <button id="calendar-confirm" style="padding:12px 32px; background:#4a90e2; color:#fff; border:none; border-radius:8px; font-size:1.1rem; font-weight:bold; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.08);">Confirm</button>
+                    <button id="calendar-cancel" style="padding:12px 32px; background:#e57373; color:#fff; border:none; border-radius:8px; font-size:1.1rem; font-weight:bold; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.08);">Cancel</button>
+                </div>
+                <div style="flex:1;">
+                    <div style="font-size:2rem; font-weight:bold; color:#e74c3c; margin-bottom:8px;">2025 <span style="background:#fff; border-radius:12px; padding:4px 16px; border:2px solid #222; font-size:1.3rem; margin-left:8px;">Check In</span> <span style="float:right; color:#333; font-size:1.2rem;">April</span></div>
+                    <div id="calendarCheckIn"></div>
+                </div>
+                <div style="flex:1;">
+                    <div style="font-size:2rem; font-weight:bold; color:#e74c3c; margin-bottom:8px;">2025 <span style="background:#fff; border-radius:12px; padding:4px 16px; border:2px solid #222; font-size:1.3rem; margin-left:8px;">Check Out</span> <span style="float:right; color:#333; font-size:1.2rem;">April</span></div>
+                    <div id="calendarCheckOut"></div>
+                </div>
+            </div>
+        </div>
+        <div class="offer-header" style="display: flex;align-items: center;justify-content: center;">
+            <div>
+                <h1>Rooms</h1>
+            </div>
+        </div>
+
+        {# Render rooms provided by the view_resort_room route #}
+        {% if rooms and rooms|length > 0 %}
+            {% for room in rooms %}
+                <div class="offer">
+                    {# choose first available image for the room #}
+                    {% set room_img = room.image1 or room.image2 or room.image3 or room.image4 or room.image5 %}
+                    {% if room_img %}
+                        <img src="{{ url_for('static', filename=room_img) }}" alt="{{ room.name }}">
+                    {% else %}
+                        <img src="https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=200&q=80" alt="Room">
+                    {% endif %}
+                    <div class="offer-details">
+                        <h1>{{ room.name }}</h1>
+                        <div class="rating">
+                            <div class="stars">★ ★ ★ ☆ ☆</div>
+                            <div class="number-of-reviews">(45 reviews)</div>
+                        </div>
+                        <div class="location">
+                            {{ owner.resort_address if owner else 'Location' }}
+                            <svg style="vertical-align: middle; margin-left: 6px;" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 2C7.03 2 3 6.03 3 11c0 5.25 7.05 10.74 8.09 11.52a1 1 0 0 0 1.22 0C13.95 21.74 21 16.25 21 11c0-4.97-4.03-9-9-9zm0 17.88C9.14 17.1 5 13.61 5 11c0-3.86 3.14-7 7-7s7 3.14 7 7c0 2.61-4.14 6.1-7 8.88zm0-10.38A2.38 2.38 0 1 0 12 13.88 2.38 2.38 0 0 0 12 7.5z" fill="#4a90e2"/>
+                            </svg>
+                        </div>
+                        <div class="offer-details">
+                            <h1>{{ room.price if room.price else 'Price not set' }}(per night)</h1>
+                            <h4>{{ room.capacity or 'N/A' }} Person</h4>
+                            {% if room.other_feature2 %}<h4>{{ room.other_feature2 }}</h4>{% endif %}
+                            {% if room.other_feature3 %}<h4>{{ room.other_feature3 }}</h4>{% endif %}
+                            {% if room.other_feature5 %}<h4>{{ room.other_feature5 }}</h4>{% endif %}
+                        </div>
+                    </div>
+                    <button class="check-date-btn">Check Date</button>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div style="width:1000px; text-align:center; background:#fff; padding:24px; border-radius:18px; box-shadow:0 4px 24px rgba(0,0,0,0.08);">No rooms available.</div>
+        {% endif %}
+    </div>
+</body>
+<script>
+// Calendar logic
+const unavailableDates = [1, 4, 12, 15, 16, 17, 18, 19]; // Example unavailable days in April 2025
+const today = new Date();
+const currentYear = 2025;
+const currentMonth = 3; // April (0-indexed)
+
+function renderCalendar(containerId, selectedRange, isCheckIn) {
+    const daysInMonth = 30;
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    let html = '<table style="width:100%; border-collapse:collapse; background:transparent;">';
+    html += '<tr>';
+    ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].forEach(d => {
+        html += `<th style='padding:6px; color:#234; background:#e3f2fd;'>${d}</th>`;
+    });
+    html += '</tr><tr>';
+    let day = 1;
+    for(let i=0; i<firstDay; i++) html += '<td></td>';
+    for(let i=firstDay; i<7; i++) {
+        html += dayCell(day++, selectedRange, isCheckIn);
+    }
+    html += '</tr>';
+    while(day <= daysInMonth) {
+        html += '<tr>';
+        for(let i=0; i<7; i++) {
+            if(day > daysInMonth) html += '<td></td>';
+            else html += dayCell(day++, selectedRange, isCheckIn);
+        }
+        html += '</tr>';
+    }
+    html += '</table>';
+    document.getElementById(containerId).innerHTML = html;
+}
+
+function dayCell(day, selectedRange, isCheckIn) {
+    const unavailable = unavailableDates.includes(day);
+    let style = 'padding:8px; text-align:center; border-radius:8px; cursor:pointer; font-weight:bold;';
+    let bg = '';
+    let color = unavailable ? '#fff' : '#222';
+    if(unavailable) bg = 'background:#e57373;';
+    else if(selectedRange && selectedRange.includes(day)) bg = 'background:#b3e5fc;';
+    else if(isToday(day)) bg = 'background:#81c784;';
+    return `<td style='${style}${bg}color:${color};' ${unavailable ? '' : `onclick='selectDate(${day},${isCheckIn})'`}>
+        ${day}
+    </td>`;
+}
+
+function isToday(day) {
+    return today.getFullYear() === currentYear && today.getMonth() === currentMonth && today.getDate() === day;
+}
+
+let selectedCheckIn = null;
+let selectedCheckOut = null;
+
+function selectDate(day, isCheckIn) {
+    if(isCheckIn) {
+        selectedCheckIn = day;
+        selectedCheckOut = null;
+        renderCalendar('calendarCheckIn', [day], true);
+        renderCalendar('calendarCheckOut', [], false);
+    } else {
+        if(!selectedCheckIn) return;
+        if(day <= selectedCheckIn) return;
+        // Check if any unavailable dates in range
+        for(let d=selectedCheckIn; d<=day; d++) {
+            if(unavailableDates.includes(d)) return;
+        }
+        selectedCheckOut = day;
+        let range = [];
+        for(let d=selectedCheckIn; d<=day; d++) range.push(d);
+        renderCalendar('calendarCheckIn', [selectedCheckIn], true);
+        renderCalendar('calendarCheckOut', range, false);
+    }
+}
+
+// Modal logic
+document.querySelectorAll('.check-date-btn').forEach(btn => {
+    btn.onclick = function() {
+        document.getElementById('calendarModal').style.display = 'flex';
+        selectedCheckIn = null;
+        selectedCheckOut = null;
+        renderCalendar('calendarCheckIn', [], true);
+        renderCalendar('calendarCheckOut', [], false);
+    };
+});
+// Confirm and Cancel button logic
+document.getElementById('calendar-cancel').onclick = function() {
+    document.getElementById('calendarModal').style.display = 'none';
+};
+document.getElementById('calendar-confirm').onclick = function() {
+    if(selectedCheckIn && selectedCheckOut) {
+        alert('Booking from April ' + selectedCheckIn + ' to April ' + selectedCheckOut);
+        document.getElementById('calendarModal').style.display = 'none';
+    } else {
+        alert('Please select a valid check-in and check-out date.');
+    }
+};
+</script>
+</html>

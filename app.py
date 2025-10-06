@@ -1038,6 +1038,7 @@ def view_resort_main():
     rooms_with_images = []
     cottages_with_images = []
     foods_with_images = []
+    activities_with_images = []
     if resort:
         for r in getattr(resort, 'rooms', []) or []:
             img = r.image1 or r.image2 or r.image3 or r.image4 or r.image5
@@ -1051,11 +1052,16 @@ def view_resort_main():
             img = f.image1 or f.image2 or f.image3 or f.image4 or f.image5
             if img:
                 foods_with_images.append(img)
+        for a in getattr(resort, 'activities', []) or []:
+            img = a.image1 or a.image2 or a.image3 or a.image4 or a.image5
+            if img:
+                activities_with_images.append(img)
 
     return render_template('viewResortMain.html', resort=resort,
                            rooms_with_images=rooms_with_images,
                            cottages_with_images=cottages_with_images,
-                           foods_with_images=foods_with_images)
+                           foods_with_images=foods_with_images,
+                           activities_with_images=activities_with_images)
 
 
 @app.route('/viewResortRoom')
@@ -1104,6 +1110,22 @@ def view_resort_food():
         foods = Food.query.all()
 
     return render_template('viewResortFood.html', owner=owner, foods=foods)
+
+
+@app.route('/viewResortActivities')
+def view_resort_activities():
+    owner_id = request.args.get('owner_id')
+    owner = None
+    activities = []
+    if owner_id:
+        owner = Owner.query.get(owner_id)
+        if owner:
+            activities = getattr(owner, 'activities', []) or []
+    else:
+        # show all activities when no owner specified
+        activities = Activity.query.all()
+
+    return render_template('viewResortActivities.html', owner=owner, activities=activities)
 
 if __name__ == '__main__':
     with app.app_context():

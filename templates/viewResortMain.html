@@ -292,9 +292,15 @@
                         {% endif %}
                     </div>
 
-                    {# activities placeholder (no model) #}
+                    {# show latest activity image for this resort owner if available #}
+                    {% set resort_activity_img = None %}
+                    {% if activities_with_images and activities_with_images|length > 0 %}
+                        {% set resort_activity_img = activities_with_images[-1] %}
+                    {% endif %}
                     <div class="activities-img">
-                        {# Activities image not modeled; omit default placeholder #}
+                        {% if resort_activity_img %}
+                            <img src="{{ url_for('static', filename=resort_activity_img) }}" alt="Activity">
+                        {% endif %}
                     </div>
 
                     {# show latest food image for this resort owner #}
@@ -369,9 +375,11 @@
         </div>
         </a>
         {% endif %}
-        {# Activities not modeled; keep placeholder or remove entirely. Keeping placeholder for now. #}
-        <div class="offer">
-            <img src="https://images.unsplash.com/photo-1465156799763-2c087c332922?auto=format&fit=crop&w=500&q=80" alt="Other Example">
+        {# Activities offer: only render if at least one activity has an image (provided by server) #}
+        {% if activities_with_images and activities_with_images|length > 0 %}
+        <a class="offer-link" href="{% if resort %}{{ url_for('view_resort_activities') }}?owner_id={{ resort.id }}{% else %}{{ url_for('view_resort_activities') }}{% endif %}" style="text-decoration:none; color:inherit;">
+        <div class="offer" data-owner="{{ resort.id if resort else '' }}">
+            <img src="{{ url_for('static', filename=activities_with_images[0]) }}" alt="Activities">
             <div class="offer-details">
                 <h1>Activities</h1>
                 <div class="rating">
@@ -385,21 +393,17 @@
                     </svg>
                 </div>
                 <div class="offer-images">
-                    <div class="activities-one-img">
-                        <img src="https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=200&q=80" alt="Room">
-                    </div>
-                    <div class="activities-two-img">
-                        <img src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=200&q=80" alt="Cottage">
-                    </div>
-                    <div class="activities-three-img">
-                        <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=200&q=80" alt="Activities">
-                    </div>
-                    <div class="activities-four-img">
-                        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=80" alt="Food">
-                    </div>
+                    {# Show up to 4 activity images #}
+                    {% for act_img in activities_with_images[:4] %}
+                        <div class="activity-one-img">
+                            <img src="{{ url_for('static', filename=act_img) }}" alt="Activity">
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
+        </a>
+        {% endif %}
         {# Foods offer: only render if at least one food has an image (provided by server) #}
         {% if foods_with_images and foods_with_images|length > 0 %}
         <a class="offer-link" href="{% if resort %}{{ url_for('view_resort_food') }}?owner_id={{ resort.id }}{% else %}{{ url_for('view_resort_food') }}{% endif %}" style="text-decoration:none; color:inherit;">

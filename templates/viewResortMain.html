@@ -166,6 +166,30 @@
             color: #2a2a2a;
         }
 
+        /* header top layout for title and action */
+        .resort-header-details .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .message-btn {
+            background: linear-gradient(90deg,#2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .message-btn svg { height: 16px; width: 16px; vertical-align: middle; }
+
         .rating {
             display: flex;
             align-items: center;
@@ -226,7 +250,13 @@
         <div class="resort-header">
             <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=500&q=80" alt="Resort Image">
             <div class="resort-header-details">
-                <h1>{{ resort.resort_name if resort else 'Resort Name' }}</h1>
+                <div class="header-top">
+                    <h1>{{ resort.resort_name if resort else 'Resort Name' }}</h1>
+                    <button class="message-btn" data-owner="{{ resort.id if resort else '' }}" title="Message owner">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="#fff"/></svg>
+                        Message
+                    </button>
+                </div>
                 <div class="rating">
                     <div class="stars">★ ★ ★ ★ ☆</div>
                     <div class="number-of-reviews">(120 reviews)</div>

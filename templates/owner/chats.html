@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            background: #CCFED8;
+            background: linear-gradient(90deg, rgba(204, 254, 216, 1) 0%, rgba(148, 185, 255, 1) 100%);
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 10vh;
+            padding: 0 100px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .content {
+            display: flex;
+            width: 100%;
+            height: 90vh;
+            padding: 30px 40px;
+            align-items: stretch;
+        }
+
+        .sidebar {
+            background: linear-gradient(135deg, #f5faff 0%, #e3f0ff 100%);
+            width: 22%;
+            border: none;
+            margin-right: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-radius: 18px;
+            padding: 32px 0 24px 0;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            min-width: 220px;
+            transition: box-shadow 0.2s;
+        }
+
+        .sidebar h1 {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #2193b0;
+            margin-bottom: 2.5rem;
+            letter-spacing: 1px;
+        }
+
+        .sidebar a {
+            font-size: 1.15rem;
+            width: 90%;
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #333;
+            transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .sidebar a:hover {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(33,147,176,0.08);
+        }
+
+        .sidebar a.active {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(33,147,176,0.08);
+        }
+
+        .sidebar a svg {
+            min-width: 22px;
+            min-height: 22px;
+            margin-right: 14px;
+            transition: filter 0.18s;
+        }
+
+        .sidebar a:hover svg {
+            filter: brightness(0) invert(1);
+        }
+
+        .sidebar a p {
+            margin-left: 0;
+            font-weight: 600;
+            color: inherit;
+            letter-spacing: 0.5px;
+        }
+
+        .modern-button {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 0.6rem 1.6rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .main {
+            background-color: #fff;
+            width: 100%;
+            border-radius: 10px;
+            padding: 20px;
+            /* make main a column flex container so inner messenger can size correctly */
+            display: flex;
+            flex-direction: column;
+            /* allow children to shrink properly so scrollable areas don't overflow */
+            min-height: 0;
+        }
+        /* Messenger-specific UI inside .main - does not alter .main itself */
+        .messenger {
+            display: flex;
+            /* take remaining space inside .main */
+            flex: 1 1 auto;
+            height: auto;
+            gap: 20px;
+            min-height: 320px;
+            min-width: 0; /* allow children to shrink */
+        }
+
+        .people-list {
+            width: 28%;
+            min-width: 200px;
+            background: #f7fbff;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            overflow-y: auto;
+            /* allow flex parent to constrain height and let this scroll */
+            min-height: 0;
+        }
+
+        .people-list .person {
+            display: flex;
+            gap: 12px;
+            padding: 10px;
+            align-items: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.12s;
+        }
+
+        .people-list .person:hover { background: rgba(33,147,176,0.06); }
+
+        .people-list img.avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #fff;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .people-list .meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .people-list .meta .name { font-weight: 700; color: #123; }
+        .people-list .meta .preview { font-size: 0.9rem; color: #666; }
+
+        .chat-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(180deg,#ffffff,#fbfdff);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            /* allow inner .chat-messages to scroll properly */
+            min-height: 0;
+        }
+
+        .chat-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #eef3f8;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-messages {
+            padding: 18px;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: transparent;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            line-height: 1.2;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        }
+
+        .message.incoming { background: #f1f5ff; align-self: flex-start; color: #111; }
+        .message.outgoing { background: #2193b0; color: #fff; align-self: flex-end; }
+
+        .message .time { display:block; font-size:0.75rem; opacity:0.7; margin-top:6px; }
+
+        .message-input {
+            padding: 10px;
+            border-top: 1px solid #eef3f8;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .message-input input[type="text"] {
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #dfe9f3;
+            outline: none;
+            font-size: 0.95rem;
+        }
+
+        .message-input button {
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: none;
+            background: #2193b0;
+            color: #fff;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        /* small responsive tweaks */
+        @media (max-width: 900px) {
+            .people-list { display: none; }
+        }
+    </style>
+</head>
+<body>
+    {% if session.user_id %}
+        {% include 'partials/navbarLoggedInCustomer.html' %}
+    {% elif session.owner_id %}
+        {% include 'partials/navbarLoggedInOwner.html' %}
+    {% else %}
+        {% include 'partials/navbar.html' %}
+    {% endif %}
+
+    <div class="content">
+        
+        {% include 'partials/owner_sidebar.html' %}
+
+        <div class="main">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h1>Chats</h1>
+                <input type="text" placeholder="Search..." style="width: 30%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;"/>
+            </div>
+            <div class="messenger">
+                <div class="people-list">
+                    <!-- Example people list; in real app this should be rendered dynamically -->
+                    <div class="person" data-id="1">
+                        <img class="avatar" src="/static/images/661a6550f3edfd93d248c6b5_DINING_1_01c94606a926437fbff5bbc22ae2f16a_1.webp" alt="avatar">
+                        <div class="meta">
+                            <div class="name">Lebron James</div>
+                            <div class="preview">Can you confirm the booking?</div>
+                        </div>
+                    </div>
+
+                    <div class="person" data-id="2">
+                        <img class="avatar" src="/static/images/standard-triple-room-bohol-sunside_1_15021fce92f8486bacbf1c5f859938c9_1.jpg" alt="avatar">
+                        <div class="meta">
+                            <div class="name">Maria Lopez</div>
+                            <div class="preview">Thanks for the update!</div>
+                        </div>
+                    </div>
+
+                    <div class="person" data-id="3">
+                        <img class="avatar" src="https://via.placeholder.com/150" alt="avatar">
+                        <div class="meta">
+                            <div class="name">Guest User</div>
+                            <div class="preview">Where is the resort located?</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-window">
+                    <div class="chat-header">
+                        <img src="https://via.placeholder.com/48" alt="chat avatar" style="width:40px;height:40px;border-radius:50%">
+                        <div>
+                            <div style="font-weight:700">Lebron James</div>
+                            <div style="font-size:0.85rem;color:#666">Last seen 2 hours ago</div>
+                        </div>
+                    </div>
+
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Example messages -->
+                        <div class="message incoming">
+                            Hello! Is the cottage available on July 22?
+                            <span class="time">10:12 AM</span>
+                        </div>
+
+                        <div class="message outgoing">
+                            Yes, it's available. Would you like me to hold it for you?
+                            <span class="time">10:13 AM</span>
+                        </div>
+
+                        <div class="message incoming">
+                            That would be great, thank you.
+                            <span class="time">10:14 AM</span>
+                        </div>
+                    </div>
+
+                    <div class="message-input">
+                        <input id="messageText" type="text" placeholder="Type a message...">
+                        <button id="sendBtn">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Simple front-end behavior for demo messenger UI
+        (function(){
+            const sendBtn = document.getElementById('sendBtn');
+            const msgInput = document.getElementById('messageText');
+            const chatMessages = document.getElementById('chatMessages');
+
+            function scrollToBottom(){
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            sendBtn && sendBtn.addEventListener('click', function(){
+                const text = msgInput.value && msgInput.value.trim();
+                if(!text) return;
+                const el = document.createElement('div');
+                el.className = 'message outgoing';
+                el.innerHTML = text + '<span class="time">Now</span>';
+                chatMessages.appendChild(el);
+                msgInput.value = '';
+                scrollToBottom();
+            });
+
+            msgInput && msgInput.addEventListener('keydown', function(e){
+                if(e.key === 'Enter') { sendBtn.click(); }
+            });
+
+            // initial scroll
+            setTimeout(scrollToBottom, 80);
+        })();
+    </script>
+</body>
+</html>

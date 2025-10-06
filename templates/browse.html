@@ -292,11 +292,11 @@
                             {% set r = owner.rooms[-1] %}
                             {% set room_img = r.image1 or r.image2 or r.image3 or r.image4 or r.image5 %}
                         {% endif %}
-                        <div class="room-img">
-                            {% if room_img %}
+                        {% if room_img %}
+                            <div class="room-img">
                                 <img src="{{ url_for('static', filename=room_img) }}" alt="Room">
-                            {% endif %}
-                        </div>
+                            </div>
+                        {% endif %}
 
                         {# latest cottage image #}
                         {% set cottage_img = None %}
@@ -304,11 +304,11 @@
                             {% set c = owner.cottages[-1] %}
                             {% set cottage_img = c.image1 or c.image2 or c.image3 or c.image4 or c.image5 %}
                         {% endif %}
-                        <div class="cottage-img">
-                            {% if cottage_img %}
+                        {% if cottage_img %}
+                            <div class="cottage-img">
                                 <img src="{{ url_for('static', filename=cottage_img) }}" alt="Cottage">
-                            {% endif %}
-                        </div>
+                            </div>
+                        {% endif %}
 
                         {# activities image isn't modeled; keep fallback #}
                         {# latest activity image #}
@@ -317,11 +317,11 @@
                             {% set act = owner.activities[-1] %}
                             {% set activity_img = act.image1 or act.image2 or act.image3 or act.image4 or act.image5 %}
                         {% endif %}
-                        <div class="activities-img">
-                            {% if activity_img %}
+                        {% if activity_img %}
+                            <div class="activities-img">
                                 <img src="{{ url_for('static', filename=activity_img) }}" alt="Activity">
-                            {% endif %}
-                        </div>
+                            </div>
+                        {% endif %}
 
                         {# latest food image #}
                         {% set food_img = None %}
@@ -329,11 +329,11 @@
                             {% set f = owner.foods[-1] %}
                             {% set food_img = f.image1 or f.image2 or f.image3 or f.image4 or f.image5 %}
                         {% endif %}
-                        <div class="food-img">
-                            {% if food_img %}
+                        {% if food_img %}
+                            <div class="food-img">
                                 <img src="{{ url_for('static', filename=food_img) }}" alt="Food">
-                            {% endif %}
-                        </div>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>

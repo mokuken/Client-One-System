@@ -274,11 +274,11 @@
                         {% set rr = resort.rooms[-1] %}
                         {% set resort_room_img = rr.image1 or rr.image2 or rr.image3 or rr.image4 or rr.image5 %}
                     {% endif %}
-                    <div class="room-img">
-                        {% if resort_room_img %}
+                    {% if resort_room_img %}
+                        <div class="room-img">
                             <img src="{{ url_for('static', filename=resort_room_img) }}" alt="Room">
-                        {% endif %}
-                    </div>
+                        </div>
+                    {% endif %}
 
                     {# show latest cottage image for this resort owner #}
                     {% set resort_cottage_img = None %}
@@ -286,22 +286,22 @@
                         {% set rc = resort.cottages[-1] %}
                         {% set resort_cottage_img = rc.image1 or rc.image2 or rc.image3 or rc.image4 or rc.image5 %}
                     {% endif %}
-                    <div class="cottage-img">
-                        {% if resort_cottage_img %}
+                    {% if resort_cottage_img %}
+                        <div class="cottage-img">
                             <img src="{{ url_for('static', filename=resort_cottage_img) }}" alt="Cottage">
-                        {% endif %}
-                    </div>
+                        </div>
+                    {% endif %}
 
                     {# show latest activity image for this resort owner if available #}
                     {% set resort_activity_img = None %}
                     {% if activities_with_images and activities_with_images|length > 0 %}
                         {% set resort_activity_img = activities_with_images[-1] %}
                     {% endif %}
-                    <div class="activities-img">
-                        {% if resort_activity_img %}
+                    {% if resort_activity_img %}
+                        <div class="activities-img">
                             <img src="{{ url_for('static', filename=resort_activity_img) }}" alt="Activity">
-                        {% endif %}
-                    </div>
+                        </div>
+                    {% endif %}
 
                     {# show latest food image for this resort owner #}
                     {% set resort_food_img = None %}
@@ -309,11 +309,11 @@
                         {% set rf = resort.foods[-1] %}
                         {% set resort_food_img = rf.image1 or rf.image2 or rf.image3 or rf.image4 or rf.image5 %}
                     {% endif %}
-                    <div class="food-img">
-                        {% if resort_food_img %}
+                    {% if resort_food_img %}
+                        <div class="food-img">
                             <img src="{{ url_for('static', filename=resort_food_img) }}" alt="Food">
-                        {% endif %}
-                    </div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

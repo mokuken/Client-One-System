@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import os
 import uuid
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'
@@ -152,6 +153,30 @@ class Activity(db.Model):
     owner = db.relationship('Owner', backref=db.backref('activities', lazy=True))
 
 
+class Conversation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref=db.backref('conversations', lazy=True))
+    owner = db.relationship('Owner', backref=db.backref('conversations', lazy=True))
+
+
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    conversation_id = db.Column(db.Integer, db.ForeignKey('conversation.id'), nullable=False)
+    sender = db.Column(db.String(10), nullable=False)  # 'user' or 'owner'
+    sender_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    sender_owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=True)
+    text = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    conversation = db.relationship('Conversation', backref=db.backref('messages', lazy=True, order_by='Message.created_at'))
+    sender_user = db.relationship('User', foreign_keys=[sender_user_id])
+    sender_owner = db.relationship('Owner', foreign_keys=[sender_owner_id])
+
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -209,7 +234,22 @@ def user_chats():
     # Render the user chats page. In the future attach the user's chat list.
     if 'user_id' not in session:
         return redirect(url_for('home'))
-    return render_template('user/chats.html')
+    # load conversations where this user participates
+    convs = Conversation.query.filter_by(user_id=session['user_id']).order_by(Conversation.created_at.desc()).all()
+    conversations = []
+    for c in convs:
+        last_msg = None
+        if c.messages:
+            last_msg = c.messages[-1]
+        conversations.append({
+            'id': c.id,
+            'owner_id': c.owner.id if c.owner else None,
+            'partner_name': c.owner.name if c.owner else 'Owner',
+            'partner_avatar': c.owner.avatar if c.owner else None,
+            'last_text': last_msg.text if last_msg else None,
+            'last_time': last_msg.created_at.isoformat() if last_msg else None
+        })
+    return render_template('user/chats.html', conversations=conversations)
 
 
 @app.route('/owner/chats')
@@ -217,7 +257,21 @@ def owner_chats():
     # Render the owner chats page (owner must be logged in)
     if 'owner_id' not in session:
         return redirect(url_for('home'))
-    return render_template('owner/chats.html')
+    convs = Conversation.query.filter_by(owner_id=session['owner_id']).order_by(Conversation.created_at.desc()).all()
+    conversations = []
+    for c in convs:
+        last_msg = None
+        if c.messages:
+            last_msg = c.messages[-1]
+        conversations.append({
+            'id': c.id,
+            'user_id': c.user.id if c.user else None,
+            'partner_name': c.user.name if c.user else 'User',
+            'partner_avatar': c.user.avatar if c.user else None,
+            'last_text': last_msg.text if last_msg else None,
+            'last_time': last_msg.created_at.isoformat() if last_msg else None
+        })
+    return render_template('owner/chats.html', conversations=conversations)
 
 
 @app.route("/owner/profile")
@@ -1062,6 +1116,95 @@ def view_resort_main():
                            cottages_with_images=cottages_with_images,
                            foods_with_images=foods_with_images,
                            activities_with_images=activities_with_images)
+
+
+@app.route('/api/conversation', methods=['POST'])
+def api_create_conversation():
+    """Create or return an existing conversation between current user and an owner.
+    Request JSON: { owner_id: int }
+    Response: { success: bool, conversation_id: int, message: str }
+    """
+    data = request.get_json() or {}
+
+    # require a logged-in user or owner
+    if 'user_id' not in session and 'owner_id' not in session:
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
+
+    # If a user is initiating chat with owner, require owner_id in payload
+    if 'user_id' in session:
+        owner_id = data.get('owner_id')
+        if not owner_id:
+            return jsonify({'success': False, 'message': 'owner_id required'}), 400
+        user_id = session['user_id']
+        # check existing
+        conv = Conversation.query.filter_by(user_id=user_id, owner_id=owner_id).first()
+        if not conv:
+            conv = Conversation(user_id=user_id, owner_id=owner_id)
+            db.session.add(conv)
+            db.session.commit()
+        return jsonify({'success': True, 'conversation_id': conv.id})
+
+    # If an owner is initiating (owner messaging a user), require user_id in payload
+    if 'owner_id' in session:
+        user_id = data.get('user_id')
+        if not user_id:
+            return jsonify({'success': False, 'message': 'user_id required for owner-initiated conversation'}), 400
+        conv = Conversation.query.filter_by(user_id=user_id, owner_id=session['owner_id']).first()
+        if not conv:
+            conv = Conversation(user_id=user_id, owner_id=session['owner_id'])
+            db.session.add(conv)
+            db.session.commit()
+        return jsonify({'success': True, 'conversation_id': conv.id})
+
+
+@app.route('/api/conversation/<int:conv_id>/messages', methods=['GET'])
+def api_get_messages(conv_id):
+    # auth check: user or owner must be part of the conversation
+    conv = Conversation.query.get(conv_id)
+    if not conv:
+        return jsonify({'success': False, 'message': 'conversation not found'}), 404
+
+    if 'user_id' in session and session['user_id'] != conv.user_id:
+        return jsonify({'success': False, 'message': 'not authorized'}), 403
+    if 'owner_id' in session and session['owner_id'] != conv.owner_id:
+        return jsonify({'success': False, 'message': 'not authorized'}), 403
+
+    msgs = []
+    for m in conv.messages:
+        msgs.append({
+            'id': m.id,
+            'sender': m.sender,
+            'text': m.text,
+            'created_at': m.created_at.isoformat()
+        })
+    return jsonify({'success': True, 'messages': msgs})
+
+
+@app.route('/api/conversation/<int:conv_id>/message', methods=['POST'])
+def api_send_message(conv_id):
+    conv = Conversation.query.get(conv_id)
+    if not conv:
+        return jsonify({'success': False, 'message': 'conversation not found'}), 404
+
+    data = request.get_json() or {}
+    text = (data.get('text') or '').strip()
+    if not text:
+        return jsonify({'success': False, 'message': 'text required'}), 400
+
+    # determine sender
+    if 'user_id' in session and session['user_id'] == conv.user_id:
+        sender = 'user'
+        m = Message(conversation_id=conv.id, sender=sender, sender_user_id=session['user_id'], text=text)
+    elif 'owner_id' in session and session['owner_id'] == conv.owner_id:
+        sender = 'owner'
+        m = Message(conversation_id=conv.id, sender=sender, sender_owner_id=session['owner_id'], text=text)
+    else:
+        return jsonify({'success': False, 'message': 'not authorized to send message in this conversation'}), 403
+
+    db.session.add(m)
+    db.session.commit()
+
+    return jsonify({'success': True, 'message_id': m.id, 'created_at': m.created_at.isoformat()})
 
 
 @app.route('/viewResortRoom')

@@ -252,7 +252,7 @@
             <div class="resort-header-details">
                 <div class="header-top">
                     <h1>{{ resort.resort_name if resort else 'Resort Name' }}</h1>
-                    <button class="message-btn" data-owner="{{ resort.id if resort else '' }}" title="Message owner">
+                    <button id="messageBtn" class="message-btn" data-owner="{{ resort.id if resort else '' }}" title="Message owner">
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="#fff"/></svg>
                         Message
                     </button>
@@ -434,5 +434,37 @@
         </a>
         {% endif %}
     </div>
+    <script>
+        (function(){
+            const btn = document.getElementById('messageBtn');
+            if(!btn) return;
+            btn.addEventListener('click', async function(){
+                const ownerId = btn.getAttribute('data-owner');
+                if(!ownerId) return;
+                try{
+                    const resp = await fetch('/api/conversation', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ owner_id: parseInt(ownerId,10) })
+                    });
+                    const data = await resp.json();
+                    if(data && data.success){
+                        // redirect user to chats page and include conversation id
+                        // if current session is owner, redirect to owner chat page
+                        // best-effort: navigate to user chat by default
+                        const base = window.location.origin + (window.location.pathname.startsWith('/viewResortMain') ? '' : '');
+                        // decide destination depending on whether current page contains 'owner/' in session template
+                        // we'll redirect to /user/chats by default
+                        window.location.href = '/user/chats?conversation_id=' + data.conversation_id;
+                    } else {
+                        alert(data.message || 'Unable to create conversation');
+                    }
+                } catch(err){
+                    console.error(err);
+                    alert('Failed to start conversation');
+                }
+            });
+        })();
+    </script>
 </body>
 </html>

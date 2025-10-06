@@ -180,6 +180,20 @@
 
         .people-list .person:hover { background: rgba(33,147,176,0.06); }
 
+        /* active conversation styling */
+        .people-list .person.active {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(33,147,176,0.12);
+        }
+        .people-list .person.active .name,
+        .people-list .person.active .preview {
+            color: #fff;
+        }
+        .people-list .person.active img.avatar {
+            border-color: rgba(255,255,255,0.9);
+        }
+
         .people-list img.avatar {
             width: 48px;
             height: 48px;
@@ -226,6 +240,16 @@
             flex-direction: column;
             gap: 12px;
             background: transparent;
+        }
+
+        .no-conversation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.05rem;
+            padding: 18px;
+            flex: 1;
         }
 
         .message {
@@ -294,60 +318,28 @@
             </div>
             <div class="messenger">
                 <div class="people-list">
-                    <!-- Example people list; in real app this should be rendered dynamically -->
-                    <div class="person" data-id="1">
-                        <img class="avatar" src="/static/images/661a6550f3edfd93d248c6b5_DINING_1_01c94606a926437fbff5bbc22ae2f16a_1.webp" alt="avatar">
-                        <div class="meta">
-                            <div class="name">Lebron James</div>
-                            <div class="preview">Can you confirm the booking?</div>
-                        </div>
-                    </div>
-
-                    <div class="person" data-id="2">
-                        <img class="avatar" src="/static/images/standard-triple-room-bohol-sunside_1_15021fce92f8486bacbf1c5f859938c9_1.jpg" alt="avatar">
-                        <div class="meta">
-                            <div class="name">Maria Lopez</div>
-                            <div class="preview">Thanks for the update!</div>
-                        </div>
-                    </div>
-
-                    <div class="person" data-id="3">
-                        <img class="avatar" src="https://via.placeholder.com/150" alt="avatar">
-                        <div class="meta">
-                            <div class="name">Guest User</div>
-                            <div class="preview">Where is the resort located?</div>
-                        </div>
-                    </div>
+                    {% if conversations and conversations|length > 0 %}
+                        {% for conv in conversations %}
+                            <div class="person" data-conversation-id="{{ conv.id }}" data-user-id="{{ conv.user_id }}">
+                                <img class="avatar" src="{{ url_for('static', filename=conv.partner_avatar) if conv.partner_avatar else 'https://via.placeholder.com/48' }}" alt="avatar">
+                                <div class="meta">
+                                    <div class="name">{{ conv.partner_name }}</div>
+                                    <div class="preview">{{ conv.last_text or 'Start a conversation' }}</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="padding:12px;color:#666">No conversations yet.</div>
+                    {% endif %}
                 </div>
 
                 <div class="chat-window">
-                    <div class="chat-header">
-                        <img src="https://via.placeholder.com/48" alt="chat avatar" style="width:40px;height:40px;border-radius:50%">
-                        <div>
-                            <div style="font-weight:700">Lebron James</div>
-                            <div style="font-size:0.85rem;color:#666">Last seen 2 hours ago</div>
-                        </div>
-                    </div>
-
                     <div class="chat-messages" id="chatMessages">
-                        <!-- Example messages -->
-                        <div class="message incoming">
-                            Hello! Is the cottage available on July 22?
-                            <span class="time">10:12 AM</span>
-                        </div>
-
-                        <div class="message outgoing">
-                            Yes, it's available. Would you like me to hold it for you?
-                            <span class="time">10:13 AM</span>
-                        </div>
-
-                        <div class="message incoming">
-                            That would be great, thank you.
-                            <span class="time">10:14 AM</span>
-                        </div>
+                        <div class="no-conversation" id="noConversation">Select a conversation from the left to start messaging.</div>
+                        <!-- messages will be loaded here via API -->
                     </div>
 
-                    <div class="message-input">
+                    <div class="message-input" id="messageInput" style="display:none">
                         <input id="messageText" type="text" placeholder="Type a message...">
                         <button id="sendBtn">Send</button>
                     </div>
@@ -356,33 +348,101 @@
         </div>
     </div>
     <script>
-        // Simple front-end behavior for demo messenger UI
         (function(){
+            const chatMessages = document.getElementById('chatMessages');
             const sendBtn = document.getElementById('sendBtn');
             const msgInput = document.getElementById('messageText');
-            const chatMessages = document.getElementById('chatMessages');
 
-            function scrollToBottom(){
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+            function getQueryParam(name){ return new URLSearchParams(window.location.search).get(name); }
+            let conversationId = getQueryParam('conversation_id');
+
+            function scrollToBottom(){ chatMessages.scrollTop = chatMessages.scrollHeight; }
+
+            const noConversationEl = document.getElementById('noConversation');
+            const messageInputEl = document.getElementById('messageInput');
+
+            async function loadMessages(){
+                if(!conversationId) return;
+                try{
+                    const res = await fetch('/api/conversation/' + conversationId + '/messages');
+                    const data = await res.json();
+                    if(data && data.success){
+                        // hide placeholder and show input
+                        noConversationEl.style.display = 'none';
+                        messageInputEl.style.display = '';
+                        // render messages
+                        // remove all children except placeholder
+                        chatMessages.innerHTML = '';
+                        data.messages.forEach(m => {
+                            const el = document.createElement('div');
+                            el.className = 'message ' + (m.sender === 'owner' ? 'outgoing' : 'incoming');
+                            el.innerHTML = (m.text) + '<span class="time">' + new Date(m.created_at).toLocaleString() + '</span>';
+                            chatMessages.appendChild(el);
+                        });
+                        scrollToBottom();
+                    }
+                } catch(e){ console.error('loadMessages', e); }
             }
 
-            sendBtn && sendBtn.addEventListener('click', function(){
+            async function sendMessage(){
+                if(!conversationId){ alert('No conversation selected'); return; }
                 const text = msgInput.value && msgInput.value.trim();
                 if(!text) return;
-                const el = document.createElement('div');
-                el.className = 'message outgoing';
-                el.innerHTML = text + '<span class="time">Now</span>';
-                chatMessages.appendChild(el);
-                msgInput.value = '';
-                scrollToBottom();
-            });
+                try{
+                    const res = await fetch('/api/conversation/' + conversationId + '/message', {
+                        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ text })
+                    });
+                    const data = await res.json();
+                    if(data && data.success){ msgInput.value = ''; await loadMessages(); }
+                    else { alert(data.message || 'Failed to send message'); }
+                } catch(e){ console.error('sendMessage', e); alert('Failed to send message'); }
+            }
 
-            msgInput && msgInput.addEventListener('keydown', function(e){
-                if(e.key === 'Enter') { sendBtn.click(); }
-            });
+            const personEls = Array.from(document.querySelectorAll('.people-list .person'));
+            async function activatePersonElement(el){
+                // remove active from others
+                personEls.forEach(p => p.classList.remove('active'));
+                el.classList.add('active');
+                // create or open conversation for this element
+                const userId = el.getAttribute('data-user-id');
+                try{
+                    const body = {};
+                    if(userId) body.user_id = parseInt(userId,10);
+                    const res = await fetch('/api/conversation', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+                    const data = await res.json();
+                    if(data && data.success){
+                        conversationId = data.conversation_id;
+                        const u = new URL(window.location);
+                        u.searchParams.set('conversation_id', conversationId);
+                        window.history.replaceState({}, '', u);
+                        // show input/clear placeholder immediately
+                        noConversationEl.style.display = 'none';
+                        messageInputEl.style.display = '';
+                        await loadMessages();
+                    } else {
+                        alert(data.message || 'Failed to create conversation');
+                    }
+                } catch(e){ console.error(e); }
+            }
 
-            // initial scroll
-            setTimeout(scrollToBottom, 80);
+            personEls.forEach(el => el.addEventListener('click', () => activatePersonElement(el)));
+
+            // If conversation_id present in url, mark matching element active and load messages
+            if(conversationId){
+                const match = personEls.find(p => String(p.getAttribute('data-conversation-id')) === String(conversationId));
+                if(match){
+                    match.classList.add('active');
+                    noConversationEl.style.display = 'none';
+                    messageInputEl.style.display = '';
+                    loadMessages();
+                }
+            }
+
+            sendBtn.addEventListener('click', sendMessage);
+            msgInput.addEventListener('keydown', e => { if(e.key === 'Enter') sendMessage(); });
+
+            if(conversationId) loadMessages();
+            setInterval(() => { if(conversationId) loadMessages(); }, 3000);
         })();
     </script>
 </body>
